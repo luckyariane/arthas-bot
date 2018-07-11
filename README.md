@@ -1,2 +1,4 @@
 # arthas-bot
-This is a custom Twitch bot created by and designed for twitch.tv/luckyariane
+Arthas Bot is a custom Twitch chat bot written in Python
+
+This bot was designed for twitch.tv/luckyariane
