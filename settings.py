@@ -1,5 +1,5 @@
 try:
-    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME
+    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME, CHANID, OAUTH
     print 'local_settings FOUND'
     
 except:
@@ -20,20 +20,33 @@ except:
     #################################
     user_settings = """
 
-#connect to twitch channel settings
-CHAN = '#<channel>' #twitch channel to connect to
-NICK = '<username>' #twitch username to connect as
+# connect to twitch channel settings
+CHAN = '#<channel>' # twitch channel to connect to
+NICK = '<username>' # twitch username to connect as
 PASS = 'oauth:<key>'  # www.twitchapps.com/tmi/ will help to retrieve the required authkey
 
-#path to save files to.  This should be separate from where the bot files are located
+# path to save files to.  This should be separate from where the bot files are located
 ROOT_PATH = r'<path>'
 
-#add user names in quotes and comma separated eg ['user1', 'user2']
+# add user names in quotes and comma separated eg ['user1', 'user2']
 REGULARS = []
 MODERATORS = []
 
-#update this if there's a name the streamer goes by different than the channel name
+# update this if there's a name the streamer goes by different than the channel name
 NICKNAME = ''
+
+# required for getting subscriber data
+CHANID = None # your numerical channel id
+OAUTH = None
+
+# Instructions for getting OAUTH:
+# use https://twitchapps.com/tokengen to get your OAUTH value.  Use 
+# CLIENT_ID 074ub1uhqkvefhdgco9m53wq76pngk (or register your own app with Twitch)
+# and request the 'channel_subscriptions' scope.  
+
+# Instructions for getting CHANID:
+# The easy no auth way to do this is to follow someone else's channel, and then open
+# api_parse.py and follow the instructions at the bottom of the file
 
 """
     #################################
@@ -50,10 +63,9 @@ if not NICKNAME:
 
     default_settings = """
 
-#connect to API setting
+# connect to API setting
 CLIENT_ID = '8zlinrdiim7fmnr7tejupimkhkfm2t'
 #CLIENT_SECRET = '<secret key>'
-
 """
 
 
@@ -65,7 +77,7 @@ CLIENT_ID = '8zlinrdiim7fmnr7tejupimkhkfm2t'
         f.write(default_settings)
         f.close()
 
-    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME
+    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME, CHANID, OAUTH
     print 'local_setting CREATED'
 
 
