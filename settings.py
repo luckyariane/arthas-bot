@@ -1,5 +1,5 @@
 try:
-    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME, CHANID, OAUTH, HELIX_OAUTH
+    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME, CHANID, OAUTH, HELIX_OAUTH, MY_YT_API_KEY, YT_CHANNEL_ID
     print 'local_settings FOUND'
     
 except:
@@ -49,6 +49,12 @@ HELIX_OAUTH = None
 # The easy no auth way to do this is to follow someone else's channel, and then open
 # api_parse.py and follow the instructions at the bottom of the file
 
+# Youtube API Settings
+MY_YT_API_KEY = None
+YT_CHANNEL_ID = None
+
+# TODO instructions for getting Youtube data
+
 """
     #################################
     # END EDITABLE DATA             #
@@ -72,13 +78,15 @@ CLIENT_ID = '8zlinrdiim7fmnr7tejupimkhkfm2t'
 
 
 
+
+
     # write configured data to new file
     with open('local_settings.py', 'w+') as f:
         f.write(user_settings)
         f.write(default_settings)
         f.close()
 
-    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME, CHANID, OAUTH, HELIX_OAUTH
+    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME, CHANID, OAUTH, HELIX_OAUTH, MY_YT_API_KEY, YT_CHANNEL_ID
     print 'local_setting CREATED'
 
 
