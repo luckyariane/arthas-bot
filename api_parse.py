@@ -4,6 +4,8 @@ import json
 import random
 import settings 
 
+# TODO: https://tmi.twitch.tv/group/user/luckyariane/chatters
+
 SESSION_LATEST_DONATOR = settings.ROOT_PATH + r'\Data\Twitch Alerts\session_most_recent_donator.txt'
 SESSION_DONATORS = settings.ROOT_PATH + r'\Data\Twitch Alerts\session_donators.txt'
 LATEST_SUB = settings.ROOT_PATH + r'\Data\Twitch Alerts\most_recent_subscriber.txt'
@@ -13,9 +15,17 @@ H = {
     'Client-ID' : settings.CLIENT_ID,
 }
 
-H_AUTH = {
+# Kraken v5
+H_AUTH_OLD = {
+    'Accept' : 'application/vnd.twitchtv.v5+json', # this can be deleted after Sept 12, 2019
     'Client-ID' : settings.CLIENT_ID,
-    'Authorization' : 'OAuth %s' % settings.OAUTH,
+    'Authorization' : 'OAuth %s' % settings.OAUTH,    
+}
+
+# Helix
+H_AUTH = {    
+    'Client-ID' : settings.CLIENT_ID,
+    'Authorization' : 'Bearer %s' % settings.OAUTH,
 }
 
 class streamDataDisplay():
@@ -33,8 +43,16 @@ class streamDataDisplay():
         self.channel_name = settings.CHAN.replace('#', '')
         self.channelId = settings.CHANID
         
-    def __api_call(self, api, auth=False):
+    def __api_call_old(self, api, auth=False):
         url = 'https://api.twitch.tv/kraken/' + api
+        if auth:
+            request = urllib2.Request(url, headers=H_AUTH_OLD)
+        else:
+            request = urllib2.Request(url, headers=H)
+        return self.__convert_json(urllib2.urlopen(request).read())
+
+    def __api_call(self, api, auth=False):
+        url = 'https://api.twitch.tv/helix/' + api
         if auth:
             request = urllib2.Request(url, headers=H_AUTH)
         else:
@@ -96,23 +114,23 @@ class streamDataDisplay():
             return ('Recent Tip', self.__pad_name(random.choice(data[1:-1]).strip()))
 
     def recent_follower(self):
-        follow_dict = self.__api_call('channels/' + self.channel_name + '/follows')
+        follow_dict = self.__api_call('users/follows?to_id=' + settings.CHANID)
         user_list = list()
-        for user in follow_dict['follows'][1:6]:
-            user_list.append(user['user']['display_name'])
-        for user in follow_dict['follows'][6:]:
-            d = self.now - datetime.strptime(user['created_at'].split('T')[0], '%Y-%m-%d')
+        for user in follow_dict['data'][1:6]:
+            user_list.append(user['from_name'])
+        for user in follow_dict['data'][6:]:
+            d = self.now - datetime.strptime(user['followed_at'].split('T')[0], '%Y-%m-%d')
             if d.days <= 7:
-                user_list.append(user['user']['display_name'])
+                user_list.append(user['from_name'])
         return ('Recent Follower', self.__pad_name(random.choice(user_list)))        
 
     def latest_follower(self):
-        follow_dict = self.__api_call('channels/' + self.channel_name + '/follows')
-        latest_follower = follow_dict['follows'][0]['user']['display_name']
+        follow_dict = self.__api_call('users/follows?to_id=' + settings.CHANID)
+        latest_follower = follow_dict['data'][0]['from_name']
         return ('Latest Follower', self.__pad_name(latest_follower))
 
     def __get_sub_data(self, q_type=None): # q_type options: latest
-        sub_dict = self.__api_call('channels/%s/subscriptions?direction=desc' % self.channelId, auth=True)
+        sub_dict = self.__api_call_old('channels/%s/subscriptions?direction=desc' % settings.CHANID, auth=True)
         sub_data = dict()
         for sub in sub_dict['subscriptions']:
             if sub['user']['name'] == self.channel_name: continue
@@ -141,12 +159,9 @@ class streamDataDisplay():
         return ('Latest Subscriber', self.__pad_name(latest_sub))
     
     def test(self):
-        follow_dict = self.__api_call('channels/' + self.channel_name + '/follows')
-        user_list = list()
-        for user in follow_dict['follows'][1:]:
-            user_list.append(user['user']['display_name'])
-        for user in user_list:
-            print self.__pad_name(user)
+        follow_dict = self.__api_call('users/follows?to_id=' + settings.CHANID)
+        latest_follower = follow_dict['data'][0]['from_name']
+        return ('Latest Follower', self.__pad_name(latest_follower))
 
     def getYourChannelID(self, followed_channel):
         follow_dict = self.__api_call('channels/' + followed_channel + '/follows')
@@ -156,7 +171,8 @@ class streamDataDisplay():
 
 if __name__ == '__main__':
     api = streamDataDisplay()
-    api.update()
+    #api.update()
+    print api.latest_sub()
     #api.test()
 
     # uncomment the lines below and run this file to get your channel id
