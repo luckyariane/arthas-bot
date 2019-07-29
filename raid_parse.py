@@ -128,6 +128,7 @@ class RaidParse():
         self.trackedBosses = self.getCurBosses()
         self.parse = False
         self.zone = None
+        self.maxHP = None
 
     def getCurBosses(self):
         with open(settings.ROOT_PATH + r'\Data\tracked_bosses.txt', 'r') as f:
@@ -184,6 +185,8 @@ class RaidParse():
     ##    hash_code = line[42]
 
         if attacked_name == self.BOSS:
+            if self.maxHP == None:
+                self.maxHP = attacked_max_health            
             self.PERCENT = self.healthPercent(attacked_current_health, attacked_max_health)
             
     def parseDeath(self, line):
@@ -208,7 +211,7 @@ class RaidParse():
         self.BOSS = new_boss
 
     def parseLoad(self, data):
-        if data[7] != '0':
+        if data[11] == self.maxHP and data[12] == self.maxHP: # confirm health has reset, and is the actual boss' load
             if self.PERCENT != 100:
                 self.rd.storeEvent(self.BOSS, 'WIPE', data[1], self.PERCENT)
                 print 'WIPE [%s] (%s): %s' % (self.PERCENT, data[1], self.BOSS)
@@ -266,6 +269,7 @@ class RaidParse():
     def reset(self):
         self.BOSS = None
         self.PERCENT = 100
+        self.maxHP = None
 
     def readFullLog(self, path): #read existing logs
         with open(path, 'rb+') as f:
@@ -309,10 +313,11 @@ if __name__ == '__main__':
     #rp.rd.addMissingData('Susano', 'WIN', 25)
     #rp.rd.addMissingData('Lakshmi', 'WIPE', 14)
     #rp.rd.addMissingData('Lakshmi', 'WIN', 17)
-    #rp.rd.viewData('Susano')
+    rp.rd.viewData('Innocence')
     #sys.exit(1)
-    rp.main(r'G:\ACT Logs\', None)
+    #rp.main('D:\ACTLogs\\', None)
+    #rp.main('C:\Users\darle\AppData\Roaming\Advanced Combat Tracker\FFXIVLogs\\', 7)
     #rp.rd.dump()
     #rp.rd.viewData('Twintania')
-    #rp.rd.updateStreamView('Twintania')
+    #rp.rd.updateStreamView('Innocence')
     #rp.rd.queryStats('Nael deus Darnus')
