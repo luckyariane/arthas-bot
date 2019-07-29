@@ -25,23 +25,25 @@ H_AUTH_OLD = {
 # Helix
 H_AUTH = {    
     'Client-ID' : settings.CLIENT_ID,
-    'Authorization' : 'Bearer %s' % settings.OAUTH,
+    'Authorization' : 'Bearer %s' % settings.HELIX_OAUTH,
 }
 
 class streamDataDisplay():
     def __init__(self):
         self.now = datetime.now()
         self.cooldown = self.now - timedelta(seconds=400)
+        self.options = [self.latest_follower] * 10 + [self.recent_follower] * 5
         if settings.CHANID and settings.OAUTH:
-            self.options = [self.latest_sub] * 5 + [self.recent_sub] * 10 + [self.latest_follower] * 10 + [self.recent_follower] * 5 #* 10 + [self.session_latest_donator] * 3 + [self.session_recent_donator]
-        else:
-            self.options = [self.latest_follower] * 10 + [self.recent_follower] * 5
+            print 'Using Kraken v5 for sub data'
+            self.options += [self.latest_sub] * 5 + [self.recent_sub] * 10 
+        elif settings.CHANID and settings.HELIX_OAUTH:
+            print 'Using Helix for sub data'
+            self.options += [self.latest_sub_helix] * 5 + [self.recent_sub_helix] * 10
         self.html_file_live = settings.ROOT_PATH + r'\Web Overlay\myStreamPanelAnimations.html'
         self.html_file_base = settings.ROOT_PATH + r'\Web Overlay\myStreamPanelSource.html'
         self.label_file = settings.ROOT_PATH + r'\Data\random_label.txt'
         self.data_file = settings.ROOT_PATH + r'\Data\random_data.txt'
         self.channel_name = settings.CHAN.replace('#', '')
-        self.channelId = settings.CHANID
         
     def __api_call_old(self, api, auth=False):
         url = 'https://api.twitch.tv/kraken/' + api
@@ -148,14 +150,53 @@ class streamDataDisplay():
                 latest = sub_data[user][0]
                 if q_type == 'latest':
                     return latest
-        return recent_subs
+        return recent_subs        
+
+    def __get_sub_data_helix(self, q_type=None): # q_type options: latest
+        # Don't use this until there's a way to sort by date
+        sub_list = list()
+        sub_dict = self.__api_call('subscriptions?broadcaster_id=%s' % settings.CHANID, auth=True)
+        print sub_dict
+        while True:
+            sub_list += sub_dict['data']
+            page = sub_dict['pagination']['cursor']
+            sub_dict = self.__api_call('subscriptions?broadcaster_id=%s&after=%s' % (settings.CHANID, page), auth=True)
+            print sub_dict
+            if len(sub_dict['data']) == 0: break
+        return 'Test'
+        # sub_data = dict()
+        # for sub in sub_dict['subscriptions']:
+        #     if sub['user']['name'] == self.channel_name: continue
+        #     sub_data[sub['user']['updated_at']] = (sub['user']['display_name'], sub['created_at'])
+
+        # recent_subs = list()
+        # latest = None
+        # # TODO: Add check for no recent subs, to not break the display
+        # for user in sorted(sub_data.keys(), reverse=True):
+        #     if latest:
+        #         d = self.now - datetime.strptime(user.split('T')[0], '%Y-%m-%d')
+        #         if d.days <= 31:
+        #             recent_subs.append(sub_data[user][0])
+        #     else:
+        #         latest = sub_data[user][0]
+        #         if q_type == 'latest':
+        #             return latest
+        # return recent_subs
 
     def recent_sub(self):
         user_list = self.__get_sub_data()
-        return ('Recent Subscriber', self.__pad_name(random.choice(user_list)))   
+        return ('Recent Subscriber', self.__pad_name(random.choice(user_list))) 
+
+    def recent_sub_helix(self):
+        user_list = self.__get_sub_data_helix()
+        return ('Recent Subscriber', self.__pad_name(random.choice(user_list)))  
 
     def latest_sub(self):
         latest_sub = self.__get_sub_data(q_type='latest')
+        return ('Latest Subscriber', self.__pad_name(latest_sub))
+
+    def latest_sub_helix(self):
+        latest_sub = self.__get_sub_data_helix(q_type='latest')
         return ('Latest Subscriber', self.__pad_name(latest_sub))
     
     def test(self):
@@ -171,8 +212,9 @@ class streamDataDisplay():
 
 if __name__ == '__main__':
     api = streamDataDisplay()
-    #api.update()
-    print api.latest_sub()
+    api.update()
+    #print api.latest_sub_helix()
+    #print api.latest_sub()
     #api.test()
 
     # uncomment the lines below and run this file to get your channel id

@@ -1,5 +1,5 @@
 try:
-    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME, CHANID, OAUTH
+    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME, CHANID, OAUTH, HELIX_OAUTH
     print 'local_settings FOUND'
     
 except:
@@ -38,6 +38,7 @@ NICKNAME = ''
 # required for getting subscriber data
 CHANID = None # your numerical channel id
 OAUTH = None
+HELIX_OAUTH = None
 
 # Instructions for getting OAUTH:
 # use https://twitchapps.com/tokengen to get your OAUTH value.  Use 
@@ -77,7 +78,7 @@ CLIENT_ID = '8zlinrdiim7fmnr7tejupimkhkfm2t'
         f.write(default_settings)
         f.close()
 
-    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME, CHANID, OAUTH
+    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME, CHANID, OAUTH, HELIX_OAUTH
     print 'local_setting CREATED'
 
 
