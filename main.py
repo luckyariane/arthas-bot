@@ -2,6 +2,7 @@ import re
 import socket
 import commands
 import api_parse
+import yt_intro_vid
 import settings
 
 # --------------------------------------------- Start Settings ----------------------------------------------------
@@ -84,7 +85,7 @@ def disconnect(con):
     part_channel(con, CHAN)
     con.close()
 
-def main(display):
+def main(display, yt):
     con = socket.socket()
     con.connect((HOST, PORT))
 
@@ -99,6 +100,7 @@ def main(display):
     while True:
         try:
             display.update()
+            yt.main()
             data = data+con.recv(1024).decode('UTF-8')
             data_split = re.split(r"[~\r\n]+", data)
             data = data_split.pop()
@@ -138,6 +140,7 @@ def main(display):
 
 if __name__ == '__main__':
     display = api_parse.streamDataDisplay()
+    yt = yt_intro_vid.YTVideo()
     while True:
         print '        >>>>Restarting Bot!'
-        main(display)
+        main(display, yt)
