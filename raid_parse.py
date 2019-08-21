@@ -1,6 +1,6 @@
 import os, time, re
 import sqlite3 as sqlite
-#from datetime import datetime
+from datetime import datetime
 import utils
 import settings
 
@@ -69,7 +69,17 @@ class RaidData():
         
         sql = "SELECT timestamp FROM raid_events WHERE boss=? AND type='WIPE'"
         self.cur.execute(sql, (boss,))
-        utils.update_file(r'%s\\boss_wipe.txt' % self.dir, len(self.cur.fetchall()))
+        timestamps = self.cur.fetchall()
+        utils.update_file(r'%s\\boss_wipe.txt' % self.dir, len(timestamps))
+
+        today = str(datetime.today()).split(' ')[0]
+        #today = '2019-08-06'
+        wipes_today = list()
+        for timestamp, in timestamps:
+            if today in timestamp:
+                wipes_today.append(timestamp)
+        #print len(wipes_today)
+        utils.update_file(r'%s\\boss_wipe_today.txt' % self.dir, len(wipes_today))        
         
         sql = "SELECT timestamp FROM raid_events WHERE boss=? AND type='WIN'"
         self.cur.execute(sql, (boss,))
@@ -227,8 +237,7 @@ class RaidParse():
                 self.rd.updateStreamView(self.BOSS)
                 break
                 
-    def parseZone(self, line):
-        zone = line.split('|')[4]
+    def parseZone(self, zone):
         for zoneType in ['Extreme', 'Savage', 'Minstrel\'s Ballad', 'Ultimate']:
             if zoneType in zone:
                 self.parse = True
@@ -242,14 +251,14 @@ class RaidParse():
     def parseLine(self, line):        
         split_line = line.split('|')
         data_type = split_line[0]
-        if data_type == '01': self.reset()
-        if not self.BOSS and not data_type == '03':
-            return
-        elif not self.BOSS:
-            self.parseForBoss(line)
-            return
-        if data_type == '00' and ' has begun' in line: self.parseZone(line)
+        if data_type == '01': self.reset()        
+        if data_type == '00' and ' has begun' in line: self.parseZone(split_line[4])
         if self.parse:
+            if not self.BOSS and not data_type == '03':
+                return
+            elif not self.BOSS:
+                self.parseForBoss(split_line[3])
+                return
             if self.BOSS in line:
                 if data_type == '03': self.parseLoad(split_line)
                 #if data_type == '04': self.parseUnload(split_line)
@@ -308,16 +317,14 @@ class RaidParse():
 if __name__ == '__main__':
     rp = RaidParse()
     #rp.rd.delete()
-    #rp.rd.init()
-    #rp.rd.addMissingData('Susano', 'WIPE', 83)
-    #rp.rd.addMissingData('Susano', 'WIN', 25)
+    #rp.rd.init(
     #rp.rd.addMissingData('Lakshmi', 'WIPE', 14)
-    #rp.rd.addMissingData('Lakshmi', 'WIN', 17)
-    rp.rd.viewData('Innocence')
+    #drp.rd.addMissingData('Leviathan', 'WIN', 1)
+    #rp.rd.viewData('Innocence')
     #sys.exit(1)
-    #rp.main('D:\ACTLogs\\', None)
+    rp.main('D:\ACTLogs\\', None)
     #rp.main('C:\Users\darle\AppData\Roaming\Advanced Combat Tracker\FFXIVLogs\\', 7)
     #rp.rd.dump()
     #rp.rd.viewData('Twintania')
-    #rp.rd.updateStreamView('Innocence')
+    #rp.rd.updateStreamView('Voidwalker')
     #rp.rd.queryStats('Nael deus Darnus')

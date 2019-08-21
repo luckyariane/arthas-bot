@@ -33,12 +33,12 @@ class streamDataDisplay():
         self.now = datetime.now()
         self.cooldown = self.now - timedelta(seconds=400)
         self.options = [self.latest_follower] * 10 + [self.recent_follower] * 5
-        if settings.CHANID and settings.OAUTH:
-            print 'Using Kraken v5 for sub data'
-            self.options += [self.latest_sub] * 5 + [self.recent_sub] * 10 
-        elif settings.CHANID and settings.HELIX_OAUTH:
-            print 'Using Helix for sub data'
-            self.options += [self.latest_sub_helix] * 5 + [self.recent_sub_helix] * 10
+        # if settings.CHANID and settings.OAUTH:
+        #     print 'Using Kraken v5 for sub data'
+        #     self.options += [self.latest_sub] * 5 + [self.recent_sub] * 10 
+        # elif settings.CHANID and settings.HELIX_OAUTH:
+        #     print 'Using Helix for sub data'
+        #     self.options += [self.latest_sub_helix] * 5 + [self.recent_sub_helix] * 10
         self.html_file_live = settings.ROOT_PATH + r'\Web Overlay\myStreamPanelAnimations.html'
         self.html_file_base = settings.ROOT_PATH + r'\Web Overlay\myStreamPanelSource.html'
         self.label_file = settings.ROOT_PATH + r'\Data\random_label.txt'
