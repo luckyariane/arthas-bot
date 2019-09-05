@@ -25,6 +25,11 @@ class RaidData():
         sql = "DROP TABLE raid_events"
         self.cur.execute(sql)
         self.conn.commit()
+
+    def deleteBoss(self, boss):
+        sql = "DELETE FROM raid_events WHERE boss=?"
+        self.cur.execute(sql, (boss,))
+        self.conn.commit()
         
     def init(self):
         sql = """CREATE TABLE
@@ -205,7 +210,7 @@ class RaidParse():
         #killed_code = line[2]
         killed_name = line[3]
         #killer_code = line[4]
-        killer_name = line[5]
+        #killer_name = line[5]
         #a = line[6]
         #hash_code = line[7]
         #print '%s | %s' % (killed_name, killed_name == self.BOSS)
@@ -246,9 +251,9 @@ class RaidParse():
                 break
         else:
             self.parse = False
-        print self.parse
 
-    def parseLine(self, line):        
+    def parseLine(self, line):       
+        line = line.replace('Titan Maximum', 'Titan')
         split_line = line.split('|')
         data_type = split_line[0]
         if data_type == '01': self.reset()        
@@ -325,6 +330,7 @@ if __name__ == '__main__':
     rp.main('D:\ACTLogs\\', None)
     #rp.main('C:\Users\darle\AppData\Roaming\Advanced Combat Tracker\FFXIVLogs\\', 7)
     #rp.rd.dump()
-    #rp.rd.viewData('Twintania')
+    #rp.rd.deleteBoss('Titan')
+    #rp.rd.viewData('Titan')
     #rp.rd.updateStreamView('Voidwalker')
     #rp.rd.queryStats('Nael deus Darnus')
