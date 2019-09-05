@@ -1,5 +1,5 @@
 try:
-    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME, CHANID, OAUTH, HELIX_OAUTH, MY_YT_API_KEY, YT_CHANNEL_ID
+    from local_settings import CHAN, NICK, PASS, ROOT_PATH, CLIENT_ID, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME, CHANID, OAUTH, REFRESH_TOKEN, HELIX_OAUTH, MY_YT_API_KEY, YT_CHANNEL_ID
     print 'local_settings FOUND'
     
 except:
@@ -38,12 +38,12 @@ NICKNAME = ''
 # required for getting subscriber data
 CHANID = None # your numerical channel id
 OAUTH = None
+REFRESH_TOKEN = None
 HELIX_OAUTH = None
 
 # Instructions for getting OAUTH:
-# use https://twitchapps.com/tokengen to get your OAUTH value.  Use 
-# CLIENT_ID 074ub1uhqkvefhdgco9m53wq76pngk (or register your own app with Twitch)
-# and request the 'channel_subscriptions' scope.  
+# use https://twitchtokengenerator.com to get your OAUTH and REFRESH_TOKEN values
+# request the 'channel_subscriptions' scope.  
 
 # Instructions for getting CHANID:
 # The easy no auth way to do this is to follow someone else's channel, and then open

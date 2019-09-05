@@ -4,6 +4,7 @@ import commands
 import api_parse
 import yt_intro_vid
 import settings
+import refresh_api
 
 # --------------------------------------------- Start Settings ----------------------------------------------------
 HOST = "irc.chat.twitch.tv"                     # Hostname of the IRC-Server in this case twitch's
@@ -139,6 +140,8 @@ def main(display, yt):
 
 
 if __name__ == '__main__':
+    if refresh_api.TokenRefreshTime(settings.ROOT_PATH): 
+        refresh_api.RefreshToken(settings.ROOT_PATH, settings.REFRESH_TOKEN)
     display = api_parse.streamDataDisplay()
     yt = yt_intro_vid.YTVideo()
     while True:

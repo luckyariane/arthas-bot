@@ -47,6 +47,7 @@ class streamDataDisplay():
         
     def __api_call_old(self, api, auth=False):
         url = 'https://api.twitch.tv/kraken/' + api
+        print url
         if auth:
             request = urllib2.Request(url, headers=H_AUTH_OLD)
         else:
@@ -212,9 +213,9 @@ class streamDataDisplay():
 
 if __name__ == '__main__':
     api = streamDataDisplay()
-    api.update()
+    #api.update()
     #print api.latest_sub_helix()
-    #print api.latest_sub()
+    print api.latest_sub()
     #api.test()
 
     # uncomment the lines below and run this file to get your channel id
