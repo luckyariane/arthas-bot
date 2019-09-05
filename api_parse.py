@@ -33,9 +33,9 @@ class streamDataDisplay():
         self.now = datetime.now()
         self.cooldown = self.now - timedelta(seconds=400)
         self.options = [self.latest_follower] * 10 + [self.recent_follower] * 5
-        # if settings.CHANID and settings.OAUTH:
-        #     print 'Using Kraken v5 for sub data'
-        #     self.options += [self.latest_sub] * 5 + [self.recent_sub] * 10 
+        if settings.CHANID and settings.OAUTH:
+            print 'Using Kraken v5 for sub data'
+            self.options += [self.latest_sub] * 5 + [self.recent_sub] * 10 
         # elif settings.CHANID and settings.HELIX_OAUTH:
         #     print 'Using Helix for sub data'
         #     self.options += [self.latest_sub_helix] * 5 + [self.recent_sub_helix] * 10
@@ -47,7 +47,6 @@ class streamDataDisplay():
         
     def __api_call_old(self, api, auth=False):
         url = 'https://api.twitch.tv/kraken/' + api
-        print url
         if auth:
             request = urllib2.Request(url, headers=H_AUTH_OLD)
         else:
@@ -213,9 +212,9 @@ class streamDataDisplay():
 
 if __name__ == '__main__':
     api = streamDataDisplay()
-    #api.update()
+    api.update()
     #print api.latest_sub_helix()
-    print api.latest_sub()
+    #print api.latest_sub()
     #api.test()
 
     # uncomment the lines below and run this file to get your channel id
