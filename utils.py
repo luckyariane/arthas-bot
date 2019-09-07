@@ -1,5 +1,6 @@
 import datetime
 import urllib2, json
+from settings import CLIENT_ID, OAUTH, HELIX_OAUTH
 
 def add_points(instance, user, change_points):
     r = instance.cur.execute('UPDATE currency SET amount = amount + ? WHERE user = ?', (change_points, user))
