@@ -4,6 +4,7 @@ one_min = 60
 two_mins = 120
 three_mins = 180
 five_mins = 300
+thirty_mins = 30 * 60
 
 def on_cooldown(timestamp, interval):
     d = datetime.now() - timestamp
