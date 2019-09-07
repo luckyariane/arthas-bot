@@ -17,7 +17,7 @@ def TokenRefreshTime(path):
             return True
         else:
             f.seek(0)
-            refresh_time = datetime.today() - timedelta(days=30)
+            refresh_time = datetime.today() - timedelta(days=15)
             date = pickle.load(f)
             if date < refresh_time:
                 print 'Time to refresh token'
