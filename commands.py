@@ -107,7 +107,7 @@ class Commands():
             gil = 10
             self.cooldowns['!wipe'] = datetime.now()
         if utils.add_points(self, self.user, gil):
-            return 'Thanks %s! Have %s %s!' % (self.user, self.currency_name)
+            return 'Thanks %s! Have %s %s!' % (self.user, gil, self.currency_name)
         else:
             return 'Thanks %s!' % self.user
 
@@ -165,8 +165,7 @@ class Commands():
                 val = int(opt)
             except ValueError: continue
             if val in self.bet_options:
-                #self.cur.execute('UPDATE CurrencyUser SET Points = Points + %s WHERE Name in ("%s")' % (payout, '","'.join(self.bet_options[val]['users'])))
-                utils.add_points_multi(instance, self.bet_options[val]['users'], payout)
+                utils.add_points_multi(self, self.bet_options[val]['users'], payout)
                 winners += self.bet_options[val]['users']
         self.con.commit()
         self.cooldowns['!betpay'] = datetime.now()
@@ -184,12 +183,12 @@ class Commands():
     def command_not8th(self, data):
         for better in self.betters:
             utils.add_points(self, better, 1)
-        return 'Yay not 8th!  All betters get 1 %s! (%s)' % ', '.join(self.betters, self.currency_name)
+        return 'Yay not 8th!  All betters get 1 %s! (%s)' % (self.currency_name, ', '.join(self.betters))
 
     def command_bonus(self, data):
         for better in self.betters:
             utils.add_points(self, better, 5)
-        return 'Yay Bonus! All betters get 5 %s! (%s)' % ', '.join(self.betters, self.currency_name)
+        return 'Yay Bonus! All betters get 5 %s! (%s)' % (self.currency_name, ', '.join(self.betters))
 
     def command_beg(self, data):
         if utils.get_points(self, self.user) < 5:
@@ -241,7 +240,7 @@ class Commands():
         if self.entry_open == False:
             d = datetime.now() - self.cooldowns['!race']
             if d.seconds < 120:
-                return "%s is trying to register for the Chocobo Racing Lucky Cup, but they forgot to train their chocobo.  Try again in %s seconds." % (instance.user, 120 - d.seconds)
+                return "%s is trying to register for the Chocobo Racing Lucky Cup, but they forgot to train their chocobo.  Try again in %s seconds." % (self.user, 120 - d.seconds)
             self.entry_open = True
             race = chocobo_racing.ChocoboRace()
             race.register_racer(self, data)

@@ -14,7 +14,7 @@ class LoyaltyPoints():
         self.current_users = list()   
 
         # database
-        self.con = sqlite.connect(ROOT_PATH + '\Data\Databases\\currency.db')
+        self.con = sqlite.connect(ROOT_PATH + r'\Data\Databases\currency.db')
         self.cur = self.con.cursor()
         self.__initDB()
 

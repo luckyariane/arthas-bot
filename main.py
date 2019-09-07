@@ -136,7 +136,7 @@ def main():
                             parse_message(con, sender, message, options)
                     except IndexError:
                         print 'INDEX ERROR: %s' % line
-        except socket.timeout, e:
+        except socket.timeout:
             #print '\tTIMED OUT - NON FATAL?'
             continue
 ##        except Exception, e:
