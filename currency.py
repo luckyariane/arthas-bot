@@ -33,13 +33,6 @@ class LoyaltyPoints():
             self.current_users += api_dict['chatters'][user_type]
 
     def incrementCurrency(self):
-        sql = 'SELECT user FROM currency WHERE user in ({seq})'.format(seq=','.join(['?'] * len(self.current_users)))
-        self.cur.execute(sql, tuple(self.current_users))
-        db_user_list = [str(x) for x, in self.cur.fetchall()]
-        for user in self.current_users:
-            if user not in db_user_list:
-                sql = 'INSERT INTO currency(user, timestamp, amount, time_increments) VALUES(?, ?, ?, ?)'
-                self.cur.execute(sql, (user, get_timestamp(), 0, 0))
         add_points_multi(self, self.current_users, self.increment, time_tracking=True)
         self.con.commit()
 
