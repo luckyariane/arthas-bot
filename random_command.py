@@ -59,7 +59,9 @@ def command_random(instance, data):
     change_points = int(round(current_points * (float(percent)/float(100)), 0))
     if change_points == 0:
         change_points = 1
-        percent = int(round((float(change_points)/float(current_points)) * 100))
+        if current_points != 0:
+            percent = int(round((float(change_points)/float(current_points)) * 100))
+        else: percent = 'inf'
 
     if verb in ['gains', 'loses']:
         if verb == 'gains':
@@ -67,9 +69,9 @@ def command_random(instance, data):
         elif verb == 'loses':
             instance.cur.execute('UPDATE currency SET amount = amount - ? WHERE user = ?', (change_points, user))
         instance.con.commit()
-        return '%s %s %s gil (%s%%)' % (user, verb, change_points, percent)
+        return '%s %s %s %s (%s%%)' % (user, verb, change_points, instance.fmt_currency_name(change_points), percent)
     elif verb == 'gives':
         instance.cur.execute('UPDATE currency SET amount = amount - ? WHERE user = ?', (change_points, user))
         instance.cur.execute('UPDATE currency SET amount = amount + ? WHERE user = ?', (change_points, other_user))
         instance.con.commit()
-        return '%s %s %s gil (%s%%) to %s' % (user, verb, change_points, percent, other_user)
+        return '%s %s %s %s (%s%%) to %s' % (user, verb, change_points, instance.fmt_currency_name(change_points), percent, other_user)
