@@ -7,11 +7,16 @@ import raid_db
 import random
 import settings
 
-class Commands:
-    def __init__(self):        
-        self.dir = r'G:\Stream\Data'
-        #self.conn = sqlite.connect('C:\Users\Darlene\AppData\Roaming\AnkhBotR2\Twitch\Databases\CurrencyDB.sqlite')
-        #self.cur = self.conn.cursor()
+class Commands():
+    def __init__(self, con, cur): 
+        # constants
+        self.currency_name = 'clovers'
+
+        # support objects
+        self.con = con
+        self.cur = cur
+
+        self.dir = settings.ROOT_PATH
         self.regulars = settings.REGULARS
         self.moderators = settings.MODERATORS
         self.admin = [settings.CHANNEL_NAME]
@@ -19,25 +24,25 @@ class Commands:
         self.recent_chatters = list()
         self.prizes = ['MINION'] * 19 + ['OUTFIT'] * 2 + ['MOUNT']
         self.winners = []
+
         #all commands and their functions
         self.commands_public = {
-            #'!win': self.command_kill,
-            #'!wipe': self.command_wipe,
-            #'!bet': self.command_bet,
-            #'!random': self.command_random,
-            #'!beg' : self.command_beg,
+            '!%s' % self.currency_name : self.command_currency,
+            '!win': self.command_kill,
+            '!wipe': self.command_wipe,
+            '!bet': self.command_bet,
+            '!random': self.command_random,
+            '!beg' : self.command_beg,
             '!scrub' : self.command_scrub,
             '!nextstream' : self.command_nextstream,
+            '!not8th': self.command_not8th,
+            '!bonus': self.command_bonus,
             #'!race' : self.command_race,
             #'!merrychristmas' : self.command_merrychristmas,
         }
         self.commands_regulars = {
             #'!curboss': self.command_curboss,
             #'!bossquery': self.command_bossquery,
-            #'!unwipe': self.command_unwipe,
-            #'!setwin': self.command_setkill,
-            #'!setwipe': self.command_setwipe,
-            #'!setprog': self.command_setprog,
             #'!betstart': self.command_betstart,
             #'!betclose': self.command_betclose,
         }
@@ -45,11 +50,9 @@ class Commands:
             '!addreg': self.command_addreg,
             #'!betpay': self.command_betpay,
             #'!betopts': self.command_betopts,
-            #'!not8th': self.command_not8th,
-            #'!bonus': self.command_bonus,
             #'!raidstart' : self.command_raidstart,
             #'!raidstop' : self.command_raidstop,
-            '!createboss': self.command_createboss,
+            # '!createboss': self.command_createboss,
         }
         self.commands_private = {
             '!addmod': self.command_addmod,
@@ -76,31 +79,35 @@ class Commands:
     #basic functions declared below
     # --------------------------------------------- Start Command Functions --------------------------------------------
 
-    def command_createboss(self, data):
-        new_cur_boss = ' '.join(data[1:]).strip()
+    def command_currency(self, data):
+        return '%s you have %i %s' % (self.user, utils.get_points(self, self.user), self.currency_name)
+
+    # def command_createboss(self, data):
+    #     new_cur_boss = ' '.join(data[1:]).strip()
         
-        if len(new_cur_boss) != 0:
-            self.raidDb.addBoss(new_cur_boss)
-            return 'Created: %s' % new_cur_boss
+    #     if len(new_cur_boss) != 0:
+    #         self.raidDb.addBoss(new_cur_boss)
+    #         return 'Created: %s' % new_cur_boss
 
     def command_kill(self, data):
+        gil = 1
         d = datetime.now() - self.cooldowns['!win']
         if d.seconds > 60:
-            gil = 1000      
+            gil = 10
             self.cooldowns['!win'] = datetime.now()
         if utils.add_points(self, self.user, gil):
-            return 'Thanks %s! Have %s gil!' % (self.user, gil)
+            return 'Thanks %s! Have %s %s!' % (self.user, gil, self.currency_name)
         else:
             return 'Thanks %s!' % self.user
 
     def command_wipe(self, data):
-        gil = 100
+        gil = 1
         d = datetime.now() - self.cooldowns['!wipe']
         if d.seconds > 60:
-            gil = 1000        
+            gil = 10
             self.cooldowns['!wipe'] = datetime.now()
         if utils.add_points(self, self.user, gil):
-            return 'Thanks %s! Have %s gil!' % (self.user, gil)
+            return 'Thanks %s! Have %s %s!' % (self.user, self.currency_name)
         else:
             return 'Thanks %s!' % self.user
 
@@ -158,11 +165,12 @@ class Commands:
                 val = int(opt)
             except ValueError: continue
             if val in self.bet_options:
-                self.cur.execute('UPDATE CurrencyUser SET Points = Points + %s WHERE Name in ("%s")' % (payout, '","'.join(self.bet_options[val]['users'])))
+                #self.cur.execute('UPDATE CurrencyUser SET Points = Points + %s WHERE Name in ("%s")' % (payout, '","'.join(self.bet_options[val]['users'])))
+                utils.add_points_multi(instance, self.bet_options[val]['users'], payout)
                 winners += self.bet_options[val]['users']
-        self.conn.commit()
+        self.con.commit()
         self.cooldowns['!betpay'] = datetime.now()
-        return 'Added %s gil to: %s' % (payout, ', '.join(winners))
+        return 'Added %s %s to: %s' % (payout, self.currency_name, ', '.join(winners))
 
     def command_betopts(self, data):
         bet_options = ['option (value, count)']
@@ -175,19 +183,19 @@ class Commands:
     
     def command_not8th(self, data):
         for better in self.betters:
-            utils.add_points(self, better, 10)
-        return 'Yay not 8th!  All betters get 10 gil! (%s)' % ', '.join(self.betters)
+            utils.add_points(self, better, 1)
+        return 'Yay not 8th!  All betters get 1 %s! (%s)' % ', '.join(self.betters, self.currency_name)
 
     def command_bonus(self, data):
         for better in self.betters:
-            utils.add_points(self, better, 100)
-        return 'Yay Bonus! All betters get 100 gil! (%s)' % ', '.join(self.betters)
+            utils.add_points(self, better, 5)
+        return 'Yay Bonus! All betters get 5 %s! (%s)' % ', '.join(self.betters, self.currency_name)
 
     def command_beg(self, data):
-        if utils.get_points(self, self.user) < 100:
-            success = utils.add_points(self, self.user, 101)
+        if utils.get_points(self, self.user) < 5:
+            success = utils.add_points(self, self.user, 5)
             if success:
-                return '%s tosses %s 101 gil out of pity.' % (settings.NICKNAME, self.user)
+                return '%s tosses %s 5 %s out of pity.' % (settings.NICKNAME, self.user, self.currency_name)
         else:
             return 'Get outta here %s!  You\'re not broke!' % self.user
 
@@ -202,9 +210,7 @@ class Commands:
     def command_nextstream(self, data):
         d = datetime.now()
         curday = d.weekday()
-        print curday
         curhour = d.hour
-        print curhour
         raw_schedule = utils.read_file(settings.ROOT_PATH + r'\Data\schedule.txt').strip()
         schedule = dict()
         for line in raw_schedule.split('\n'):
@@ -229,7 +235,7 @@ class Commands:
                         next_stream = (schedule[day]['name'], self.convert_24hour_time(time))
                         break
             day = (day + 1) % 7
-        return self.NICKNAME + "'s next stream will start %s at %sm EST" % next_stream
+        return settings.NICKNAME + "'s next stream will start %s at %sm EST" % next_stream
     
     def command_race(self, data):
         if self.entry_open == False:

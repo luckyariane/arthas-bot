@@ -2,7 +2,7 @@ import random
 from datetime import datetime
 import settings
 
-verbs = ['gains'] * 30 + ['loses'] * 20 + ['gives']
+verbs = ['gains'] * 10 + ['loses'] * 10 + ['gives']
 
 # dj_count = 0
 # dj_joke = False
@@ -22,7 +22,7 @@ def command_random(instance, data):
         # global dj_count
         # if dj_count > 10:
             # if 'dj_rezurrection' in instance.recent_chatters:
-                # instance.cur.execute('SELECT Points FROM CurrencyUser WHERE Name = "dj_rezurrection"')
+                # instance.cur.execute('SELECT amount FROM currency WHERE user = "dj_rezurrection"')
                 # current_points = instance.cur.fetchone()[0]
                 # dj_joke = True
                 # return 'dj_rezurrection loses %s gil (100%%)' % current_points
@@ -49,23 +49,23 @@ def command_random(instance, data):
 
     percent = random.choice(range(1, 11))
 
-    instance.cur.execute('SELECT Points FROM CurrencyUser WHERE Name = "%s"' % user)
+    instance.cur.execute('SELECT amount FROM currency WHERE user = ?', (user,))
     try:
         current_points = int(instance.cur.fetchone()[0])
     except TypeError:
-        return "Sorry %s you're not in the database yet.  Hit that follow button, or try again in 5 mins" % user 
+        return "Sorry %s you're not in the database yet.  Try again in 5 mins" % user 
     
     change_points = int(round(current_points * (float(percent)/float(100)), 0))
 
     if verb in ['gains', 'loses']:
         if verb == 'gains':
-            instance.cur.execute('UPDATE CurrencyUser SET Points = Points + %s WHERE Name in ("%s")' % (change_points, user))
+            instance.cur.execute('UPDATE currency SET amount = amount + ? WHERE user = ?', (change_points, user))
         elif verb == 'loses':
-            instance.cur.execute('UPDATE CurrencyUser SET Points = Points - %s WHERE Name in ("%s")' % (change_points, user))
-        instance.conn.commit()
+            instance.cur.execute('UPDATE currency SET amount = amount - ? WHERE user = ?', (change_points, user))
+        instance.con.commit()
         return '%s %s %s gil (%s%%)' % (user, verb, change_points, percent)
     elif verb == 'gives':
-        instance.cur.execute('UPDATE CurrencyUser SET Points = Points - %s WHERE Name in ("%s")' % (change_points, user))
-        instance.cur.execute('UPDATE CurrencyUser SET Points = Points + %s WHERE Name in ("%s")' % (change_points, other_user))
-        instance.conn.commit()
+        instance.cur.execute('UPDATE currency SET amount = amount - ? WHERE user = ?', (change_points, user))
+        instance.cur.execute('UPDATE currency SET amount = amount + ? WHERE user = ?', (change_points, other_user))
+        instance.con.commit()
         return '%s %s %s gil (%s%%) to %s' % (user, verb, change_points, percent, other_user)
