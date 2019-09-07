@@ -1,4 +1,3 @@
-import datetime
 import urllib2, json
 from settings import CLIENT_ID, OAUTH, HELIX_OAUTH
 
@@ -6,8 +5,10 @@ def add_points(instance, user, change_points):
     r = instance.cur.execute('UPDATE currency SET amount = amount + ? WHERE user = ?', (change_points, user))
     return success(r.rowcount) 
     
-def add_points_multi(instance, user_list, change_points):
+def add_points_multi(instance, user_list, change_points, time_tracking=False):
     r = instance.cur.execute('UPDATE currency SET amount = amount + ? WHERE user in ({seq})'.format(seq=','.join(['?'] * len(user_list))), tuple([change_points] + user_list))
+    if success(r.rowcount) and time_tracking:
+        r = instance.cur.execute('UPDATE currency SET time_increments = time_increments + 1 WHERE user in ({seq})'.format(seq=','.join(['?'] * len(user_list))), tuple(user_list))
     return success(r.rowcount) 
 
 def sub_points(instance, user, change_points):
@@ -48,8 +49,4 @@ def get_webpage(url, h=None):
   
 def convert_json(data):
     return json.loads(data)
-
-#def cooldown(timer, time, user=None):
-#    d = datetime.now() - timer
-#    if d.seconds < time:
 
