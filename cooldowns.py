@@ -8,8 +8,8 @@ def on_cooldown(timestamp, interval):
     if d.seconds < interval: return True
     return False
 
-def reset_cooldown():
+def set_cooldown():
     return datetime.now()
 
-def set_cooldown():
+def init_cooldown():
     return datetime.now() - timedelta(seconds=50000)
