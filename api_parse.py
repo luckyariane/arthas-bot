@@ -11,6 +11,7 @@ CLIENT_ID = CLIENT_ID
 
 # api headers
 H_BASIC = {
+    'Accept' : 'application/vnd.twitchtv.v5+json', # this can be deleted after Sept 12, 2019
     'Client-ID' : CLIENT_ID,
 }
 
