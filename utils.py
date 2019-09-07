@@ -43,7 +43,7 @@ def get_webpage(url, h=None):
     if h:
         request = urllib2.Request(url, headers=h)
     else: 
-        request = urllib2.Request(url)
+        request = url
     return urllib2.urlopen(request).read()
   
 def convert_json(data):
