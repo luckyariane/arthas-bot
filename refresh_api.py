@@ -31,7 +31,6 @@ def RefreshToken(path, refresh_token):
     # url = 'https://twitchtokengenerator.com/api/refresh/' + refresh_token
     # request = urllib2.Request(url)
     # data = json.loads(urllib2.urlopen(request).read())
-    data = {'token' : 'ml196w3odfc8o5uvm6vxm8v6b978di'}
     if 'token' in data:
         new_token = data['token']
         with open(path + r'\arthas-bot\local_settings.py', 'r+') as f:
