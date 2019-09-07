@@ -1,25 +1,24 @@
-from datetime import datetime, timedelta
 import sqlite3 as sqlite
-import random_command
-import chocobo_racing
-import utils
-import raid_db
 import random
-import settings
+from random_command import command_random
+import chocobo_racing
+from utils import get_points, add_points, read_file, merge_dicts
+from settings import ROOT_PATH, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME
+from cooldowns import init_cooldown, set_cooldown, on_cooldown, get_cooldown, one_min, two_mins, three_mins, five_mins
 
 class Commands():
     def __init__(self, con, cur): 
         # constants
         self.currency_name = 'clovers'
 
-        # support objects
+        # db objects
         self.con = con
         self.cur = cur
 
-        self.dir = settings.ROOT_PATH
-        self.regulars = settings.REGULARS
-        self.moderators = settings.MODERATORS
-        self.admin = [settings.CHANNEL_NAME]
+        self.dir = ROOT_PATH
+        self.regulars = REGULARS
+        self.moderators = MODERATORS
+        self.admin = [CHANNEL_NAME]
         self.user = None
         self.recent_chatters = list()
         self.prizes = ['MINION'] * 19 + ['OUTFIT'] * 2 + ['MOUNT']
@@ -30,13 +29,13 @@ class Commands():
             '!%s' % self.currency_name : self.command_currency,
             '!win': self.command_kill,
             '!wipe': self.command_wipe,
-            '!bet': self.command_bet,
+            # '!bet': self.command_bet,
             '!random': self.command_random,
             '!beg' : self.command_beg,
             '!scrub' : self.command_scrub,
             '!nextstream' : self.command_nextstream,
-            '!not8th': self.command_not8th,
-            '!bonus': self.command_bonus,
+            # '!not8th': self.command_not8th,
+            # '!bonus': self.command_bonus,
             #'!race' : self.command_race,
             #'!merrychristmas' : self.command_merrychristmas,
         }
@@ -50,66 +49,43 @@ class Commands():
             '!addreg': self.command_addreg,
             #'!betpay': self.command_betpay,
             #'!betopts': self.command_betopts,
-            #'!raidstart' : self.command_raidstart,
-            #'!raidstop' : self.command_raidstop,
-            # '!createboss': self.command_createboss,
+            '!raidstart' : self.command_raidstart,
+            '!raidstop' : self.command_raidstop,
+            # '!racestart' : self.command_racestart,
+            # '!racestop' : self.command_racestop,
         }
         self.commands_private = {
             '!addmod': self.command_addmod,
         }
 
-        self.init_time = datetime.now() - timedelta(seconds=50000)
         self.cooldowns = {
-            '!betpay'   : self.init_time,
-            '!win'      : self.init_time,
-            '!wipe'     : self.init_time,
-            '!unwipe'   : self.init_time,
-            '!race'     : self.init_time,
+            # '!betpay'   : init_cooldown(),
+            '!win'      : init_cooldown(),
+            '!wipe'     : init_cooldown(),
+            # '!not8th'   : init_cooldown(),
+            # '!bonus'    : init_cooldown(),
+            # '!race'     : init_cooldown(),
         }
 
         # functionality for !race
         self.entry_open = False
 
-        #functionality for betting
+        # functionality for betting
         self.start_bet = False
         self.bets = dict()
         self.betters = list()
         self.bet_options = dict()
 
-    #basic functions declared below
-    # --------------------------------------------- Start Command Functions --------------------------------------------
+        # functionality for raiding
+        self.raid = False
+
+        # functionality for chocobo racing
+        # self.racing = False
+
+    # --------------------------------------------- Start Local Command Functions --------------------------------------------
 
     def command_currency(self, data):
-        return '%s you have %i %s' % (self.user, utils.get_points(self, self.user), self.currency_name)
-
-    # def command_createboss(self, data):
-    #     new_cur_boss = ' '.join(data[1:]).strip()
-        
-    #     if len(new_cur_boss) != 0:
-    #         self.raidDb.addBoss(new_cur_boss)
-    #         return 'Created: %s' % new_cur_boss
-
-    def command_kill(self, data):
-        gil = 1
-        d = datetime.now() - self.cooldowns['!win']
-        if d.seconds > 60:
-            gil = 10
-            self.cooldowns['!win'] = datetime.now()
-        if utils.add_points(self, self.user, gil):
-            return 'Thanks %s! Have %s %s!' % (self.user, gil, self.currency_name)
-        else:
-            return 'Thanks %s!' % self.user
-
-    def command_wipe(self, data):
-        gil = 1
-        d = datetime.now() - self.cooldowns['!wipe']
-        if d.seconds > 60:
-            gil = 10
-            self.cooldowns['!wipe'] = datetime.now()
-        if utils.add_points(self, self.user, gil):
-            return 'Thanks %s! Have %s %s!' % (self.user, gil, self.currency_name)
-        else:
-            return 'Thanks %s!' % self.user
+        return '%s you have %i %s' % (self.user, get_points(self, self.user), self.currency_name)
 
     def command_addreg(self, data):
         self.regulars.append(data)
@@ -117,84 +93,108 @@ class Commands():
     def command_addmod(self, data):
         self.moderators.append(data)
 
-    def command_betstart(self, data):
-        self.start_bet = True
-        self.bets = dict()
-        self.betters = list()
-        self.bet_options = dict()
-        return 'Betting has started.  Enter with !bet <value>'
+    def command_raidstart(self, data):
+        self.raid = True
 
-    def command_betclose(self, data):
-        if self.start_bet == False:
-            return True
-        self.start_bet = False
-        print '=' * 20
-        print 'BETS ENTERED:'
-        for key in sorted(self.bet_options):
-            print '    %s (%s): %s' % (key, self.bet_options[key]['option'], ', '.join(self.bet_options[key]['users']))
-        print '=' * 20
-        return 'Betting now closed.  Betters are: %s' % ', '.join(self.betters)
+    def command_raidstop(self, data):
+        self.raid = False
 
-    def command_bet(self, data):
-        if not self.start_bet:
-            return True
-        if self.user in self.betters:
-            return True
-        option = ' '.join(data[1:]).lower().strip()
-        if len(option) == 0:
-            return True
-        if option not in self.bets:
-            self.bets[option] = list()
-        self.bets[option].append(self.user)
-        self.betters.append(self.user)
-        self.update_bet_options()
-        return True
+    def command_kill(self, data):
+        if not self.raid: return
+        gil = 1
+        if not on_cooldown(self.cooldowns['!win'], one_min):
+            gil = 10
+            self.cooldowns['!win'] = set_cooldown()
+        if add_points(self, self.user, gil):
+            return 'Thanks %s! Have %s %s!' % (self.user, gil, self.currency_name)
+        else:
+            return 'Thanks %s!' % self.user
 
-    def command_betpay(self, data):
-        d = datetime.now() - self.cooldowns['!betpay']
-        if d.seconds < 60:
-            return True
-        try:
-            payout = int(data[1])
-        except ValueError:
-            return 'Incorrect payout set.  Format must be !betpay <payout #> option1 option2 etc'
-        win_opts = data[2:]
-        winners = list()
-        for opt in win_opts:
-            try:
-                val = int(opt)
-            except ValueError: continue
-            if val in self.bet_options:
-                utils.add_points_multi(self, self.bet_options[val]['users'], payout)
-                winners += self.bet_options[val]['users']
-        self.con.commit()
-        self.cooldowns['!betpay'] = datetime.now()
-        return 'Added %s %s to: %s' % (payout, self.currency_name, ', '.join(winners))
+    def command_wipe(self, data):
+        if not self.raid: return
+        gil = 1
+        if not on_cooldown(self.cooldowns['!wipe'], one_min):
+            gil = 10
+            self.cooldowns['!wipe'] = set_cooldown()
+        if add_points(self, self.user, gil):
+            return 'Thanks %s! Have %s %s!' % (self.user, gil, self.currency_name)
+        else:
+            return 'Thanks %s!' % self.user
 
-    def command_betopts(self, data):
-        bet_options = ['option (value, count)']
-        for key in sorted(self.bet_options):
-            bet_options.append('%s (%s)' % (key, self.bet_options[key]['option']))
-        return ', '.join(bet_options)
+    # def command_betstart(self, data):
+    #     self.start_bet = True
+    #     self.bets = dict()
+    #     self.betters = list()
+    #     self.bet_options = dict()
+    #     return 'Betting has started.  Enter with !bet <value>'
 
-    def command_random(self, data):
-        return random_command.command_random(self, data)
+    # def command_betclose(self, data):
+    #     if self.start_bet == False:
+    #         return True
+    #     self.start_bet = False
+    #     print '=' * 20
+    #     print 'BETS ENTERED:'
+    #     for key in sorted(self.bet_options):
+    #         print '    %s (%s): %s' % (key, self.bet_options[key]['option'], ', '.join(self.bet_options[key]['users']))
+    #     print '=' * 20
+    #     return 'Betting now closed.  Betters are: %s' % ', '.join(self.betters)
+
+    # def command_bet(self, data):
+    #     if not self.start_bet:
+    #         return True
+    #     if self.user in self.betters:
+    #         return True
+    #     option = ' '.join(data[1:]).lower().strip()
+    #     if len(option) == 0:
+    #         return True
+    #     if option not in self.bets:
+    #         self.bets[option] = list()
+    #     self.bets[option].append(self.user)
+    #     self.betters.append(self.user)
+    #     self.update_bet_options()
+    #     return True
+
+    # def command_betpay(self, data):
+    #     if on_cooldown(self.cooldowns['!betpay'], one_min):
+    #         return True
+    #     try:
+    #         payout = int(data[1])
+    #     except ValueError:
+    #         return 'Incorrect payout set.  Format must be !betpay <payout #> option1 option2 etc'
+    #     win_opts = data[2:]
+    #     winners = list()
+    #     for opt in win_opts:
+    #         try:
+    #             val = int(opt)
+    #         except ValueError: continue
+    #         if val in self.bet_options:
+    #             add_points_multi(self, self.bet_options[val]['users'], payout)
+    #             winners += self.bet_options[val]['users']
+    #     self.con.commit()
+    #     self.cooldowns['!betpay'] = set_cooldown()
+    #     return 'Added %s %s to: %s' % (payout, self.currency_name, ', '.join(winners))
+
+    # def command_betopts(self, data):
+    #     bet_options = ['option (value, count)']
+    #     for key in sorted(self.bet_options):
+    #         bet_options.append('%s (%s)' % (key, self.bet_options[key]['option']))
+    #     return ', '.join(bet_options)
     
-    def command_not8th(self, data):
-        for better in self.betters:
-            utils.add_points(self, better, 1)
-        return 'Yay not 8th!  All betters get 1 %s! (%s)' % (self.currency_name, ', '.join(self.betters))
+    # def command_not8th(self, data):
+    #     for better in self.betters:
+    #         add_points(self, better, 1)
+    #     return 'Yay not 8th!  All betters get 1 %s! (%s)' % (self.currency_name, ', '.join(self.betters))
 
-    def command_bonus(self, data):
-        for better in self.betters:
-            utils.add_points(self, better, 5)
-        return 'Yay Bonus! All betters get 5 %s! (%s)' % (self.currency_name, ', '.join(self.betters))
+    # def command_bonus(self, data):
+    #     for better in self.betters:
+    #         add_points(self, better, 5)
+    #     return 'Yay Bonus! All betters get 5 %s! (%s)' % (self.currency_name, ', '.join(self.betters))
 
     def command_beg(self, data):
-        if utils.get_points(self, self.user) < 5:
-            success = utils.add_points(self, self.user, 5)
+        if get_points(self, self.user) < 5:
+            success = add_points(self, self.user, 5)
             if success:
-                return '%s tosses %s 5 %s out of pity.' % (settings.NICKNAME, self.user, self.currency_name)
+                return '%s tosses %s 5 %s out of pity.' % (NICKNAME, self.user, self.currency_name)
         else:
             return 'Get outta here %s!  You\'re not broke!' % self.user
 
@@ -203,14 +203,14 @@ class Commands():
             user = data[1]
         except IndexError:
             pass
-        if user.strip() == '': user = settings.NICKNAME
+        if user.strip() == '': user = NICKNAME
         return "%s isn't failing, %s.  It's a strategy." % (user, self.user)
             
     def command_nextstream(self, data):
-        d = datetime.now()
+        d = set_cooldown()
         curday = d.weekday()
         curhour = d.hour
-        raw_schedule = utils.read_file(settings.ROOT_PATH + r'\Data\schedule.txt').strip()
+        raw_schedule = read_file(ROOT_PATH + r'\Data\schedule.txt').strip()
         schedule = dict()
         for line in raw_schedule.split('\n'):
             line_data = line.split(',') 
@@ -234,13 +234,12 @@ class Commands():
                         next_stream = (schedule[day]['name'], self.convert_24hour_time(time))
                         break
             day = (day + 1) % 7
-        return settings.NICKNAME + "'s next stream will start %s at %sm EST" % next_stream
+        return NICKNAME + "'s next stream will start %s at %sm EST" % next_stream
     
     def command_race(self, data):
         if self.entry_open == False:
-            d = datetime.now() - self.cooldowns['!race']
-            if d.seconds < 120:
-                return "%s is trying to register for the Chocobo Racing Lucky Cup, but they forgot to train their chocobo.  Try again in %s seconds." % (self.user, 120 - d.seconds)
+            if on_cooldown(self.cooldowns['!race'], two_mins):
+                return "%s is trying to register for the Chocobo Racing Lucky Cup, but they forgot to train their chocobo.  Try again in %s seconds." % (self.user, get_cooldown(self.cooldowns['!race'], two_mins))
             self.entry_open = True
             race = chocobo_racing.ChocoboRace()
             race.register_racer(self, data)
@@ -257,20 +256,29 @@ class Commands():
         self.prizes.pop(self.prizes.index(prize))
         #print self.prizes
         self.winners.append(self.user)
-        return 'Congratulations %s!  You have won a %s from the mog station!  Please let %s know which you would like so she can send it!' % (self.user, prize, settings.NICKNAME)
+        return 'Congratulations %s!  You have won a %s from the mog station!  Please let %s know which you would like so she can send it!' % (self.user, prize, NICKNAME)
         
         
-    # --------------------------------------------- End Command Functions ----------------------------------------------
+    # --------------------------------------------- End Local Command Functions ----------------------------------------------
 
-    #support functions
+    # --------------------------------------------- Start Remote Command Functions -------------------------------------------
+
+    def command_random(self, data):
+        return command_random(self, data)
+
+    # --------------------------------------------- End Remote Command Functions ---------------------------------------------
+
+    # --------------------------------------------- Start Support Functions --------------------------------------------------
+
+
     def get_commands_dict(self, user):
         commands = self.commands_public.copy()
         if user in self.regulars + self.moderators + self.admin:
-            commands = utils.merge_dicts(commands, self.commands_regulars)
+            commands = merge_dicts(commands, self.commands_regulars)
         if user in self.moderators + self.admin:
-            commands = utils.merge_dicts(commands, self.commands_moderators)
+            commands = merge_dicts(commands, self.commands_moderators)
         if user in self.admin:
-            commands = utils.merge_dicts(commands, self.commands_private)
+            commands = merge_dicts(commands, self.commands_private)
         return commands
 
     def set_user(self, user):
