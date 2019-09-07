@@ -1,12 +1,12 @@
+import sqlite3 as sqlite 
 from settings import ROOT_PATH
 from utils import get_webpage, convert_json, add_points_multi
-import sqlite3 as sqlite 
-from datetime import datetime, timedelta
+from cooldowns import set_cooldown, on_cooldown, get_timestamp, five_mins
 
 class LoyaltyPoints():    
     def __init__(self):     
-        self.lastRun = datetime.now()
-        self.delay = 300 # in seconds
+        self.lastRun = set_cooldown()
+        self.delay = five_mins
         self.increment = 1 # per delay
         
         # track users
@@ -19,13 +19,12 @@ class LoyaltyPoints():
         self.__initDB()
 
     def checkCurrency(self):
-        d = datetime.now() - self.lastRun
-        if d.seconds < self.delay:
+        if on_cooldown(self.lastRun, self.delay):
             return 
 
         self.getCurrentUsers()
         self.incrementCurrency()
-        self.lastRun = datetime.now()
+        self.lastRun = set_cooldown()
 
     def getCurrentUsers(self):
         self.current_users = list()        
@@ -39,9 +38,9 @@ class LoyaltyPoints():
         db_user_list = [str(x) for x, in self.cur.fetchall()]
         for user in self.current_users:
             if user not in db_user_list:
-                sql = 'INSERT INTO currency(user, timestamp, amount) VALUES(?, ?, ?)'
-                self.cur.execute(sql, (user, datetime.now(), self.increment))
-        add_points_multi(self, self.current_users, self.increment)
+                sql = 'INSERT INTO currency(user, timestamp, amount, time_increments) VALUES(?, ?, ?, ?)'
+                self.cur.execute(sql, (user, get_timestamp(), 0, 0))
+        add_points_multi(self, self.current_users, self.increment, time_tracking=True)
         self.con.commit()
 
     def dump(self):
@@ -57,6 +56,7 @@ class LoyaltyPoints():
                     user text NOT NULL,
                     timestamp text,
                     amount integer,
+                    time_increments integer,
                     UNIQUE (user) ON CONFLICT Ignore
                     )"""
         self.cur.execute(sql)
