@@ -6,6 +6,7 @@ import yt_intro_vid
 import settings
 import refresh_api
 from currency import LoyaltyPoints
+from stream_data import Stream
 
 # --------------------------------------------- Start Settings ----------------------------------------------------
 HOST = "irc.chat.twitch.tv"                     # Hostname of the IRC-Server in this case twitch's
@@ -14,6 +15,7 @@ CHAN = settings.CHAN                            # Channelname = #{Nickname}
 NICK = settings.NICK                            # Nickname = Twitch username
 PASS = settings.PASS                            # www.twitchapps.com/tmi/ will help to retrieve the required authkey
 
+STREAM = Stream()
 DISPLAY = api_parse.streamDataDisplay()
 YT = yt_intro_vid.YTVideo()
 C = LoyaltyPoints()
@@ -105,9 +107,11 @@ def main():
 
     while True:
         try:
-            DISPLAY.update()
-            YT.main()
-            C.checkCurrency()
+            STREAM.updateStreamData()
+            if STREAM.live: 
+                DISPLAY.update()
+                YT.main()
+                C.checkCurrency()
             data = data+con.recv(1024).decode('UTF-8')
             data_split = re.split(r"[~\r\n]+", data)
             data = data_split.pop()
