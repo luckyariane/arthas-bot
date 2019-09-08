@@ -1,16 +1,15 @@
 import urllib2, re, random, json
-from datetime import datetime, timedelta
+from cooldowns import init_cooldown, on_cooldown, set_cooldown, thirty_mins
 from settings import MY_YT_API_KEY, YT_CHANNEL_ID
 
 YT_URL = 'http://www.youtube.com/watch?v=%s&start=%s'
 
 class YTVideo():
     def __init__(self):
-        self.now = datetime.now()
-        self.cooldown = self.now - timedelta(seconds=31 * 60)
+        self.cooldown = init_cooldown()
         self.main()
 
-    def getAPIData(slef, api_str):
+    def getAPIData(self, api_str):
         url = 'https://www.googleapis.com/youtube/v3/' + api_str
         request = urllib2.Request(url)
         return json.loads(urllib2.urlopen(request).read())
@@ -78,9 +77,7 @@ class YTVideo():
         print 'Updated Youtube Video to [ %s ]' % YT_URL % (video_id, timestamp)
 
     def main(self):
-        self.now = datetime.now()
-        d = self.now - self.cooldown
-        if d.seconds < 30 * 60:
+        if on_cooldown(self.cooldown, thirty_mins):
             return
 
         video_dict = None
@@ -91,7 +88,7 @@ class YTVideo():
             if timestamp != 0: break
 
         self.makeWebPage(video_id, timestamp)
-        self.cooldown = self.now
+        self.cooldown = set_cooldown()
 
 
 if __name__ == '__main__':

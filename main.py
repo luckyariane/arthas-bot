@@ -5,6 +5,8 @@ import api_parse
 import yt_intro_vid
 import settings
 import refresh_api
+from currency import LoyaltyPoints
+from stream_data import Stream
 
 # --------------------------------------------- Start Settings ----------------------------------------------------
 HOST = "irc.chat.twitch.tv"                     # Hostname of the IRC-Server in this case twitch's
@@ -13,8 +15,13 @@ CHAN = settings.CHAN                            # Channelname = #{Nickname}
 NICK = settings.NICK                            # Nickname = Twitch username
 PASS = settings.PASS                            # www.twitchapps.com/tmi/ will help to retrieve the required authkey
 
-COMS = commands.Commands()
+STREAM = Stream()
+DISPLAY = api_parse.streamDataDisplay()
+YT = yt_intro_vid.YTVideo()
+C = LoyaltyPoints()
+COMS = commands.Commands(C.con, C.cur)
 # --------------------------------------------- End Settings -------------------------------------------------------
+
 
 
 # --------------------------------------------- Start Functions ----------------------------------------------------
@@ -86,7 +93,7 @@ def disconnect(con):
     part_channel(con, CHAN)
     con.close()
 
-def main(display, yt):
+def main():
     con = socket.socket()
     con.connect((HOST, PORT))
 
@@ -100,8 +107,11 @@ def main(display, yt):
 
     while True:
         try:
-            display.update()
-            yt.main()
+            STREAM.updateStreamData()
+            if STREAM.live: 
+                DISPLAY.update()
+                YT.main()
+                C.checkCurrency()
             data = data+con.recv(1024).decode('UTF-8')
             data_split = re.split(r"[~\r\n]+", data)
             data = data_split.pop()
@@ -130,7 +140,7 @@ def main(display, yt):
                             parse_message(con, sender, message, options)
                     except IndexError:
                         print 'INDEX ERROR: %s' % line
-        except socket.timeout, e:
+        except socket.timeout:
             #print '\tTIMED OUT - NON FATAL?'
             continue
 ##        except Exception, e:
@@ -142,8 +152,6 @@ def main(display, yt):
 if __name__ == '__main__':
     if refresh_api.TokenRefreshTime(settings.ROOT_PATH): 
         refresh_api.RefreshToken(settings.ROOT_PATH, settings.REFRESH_TOKEN)
-    display = api_parse.streamDataDisplay()
-    yt = yt_intro_vid.YTVideo()
     while True:
         print '        >>>>Restarting Bot!'
-        main(display, yt)
+        main()
