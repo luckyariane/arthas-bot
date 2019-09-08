@@ -132,7 +132,7 @@ class Commands():
         self.bets = dict()
         self.betters = list()
         self.bet_options = dict()
-        self.bet_payout = data[1]
+        # self.bet_payout = data[1]
         return 'Betting has started.  Enter with !bet <value>'
 
     def command_betclose(self, data):
@@ -198,7 +198,7 @@ class Commands():
         if on_cooldown(self.cooldowns['!bonus'], three_mins): return True
         for better in self.betters:
             add_points(self, better, 5)
-        self.coodowns['!bonus'] = set_cooldown()
+        self.cooldowns['!bonus'] = set_cooldown()
         return 'Yay Bonus! All betters get 5 %s! (%s)' % (self.fmt_currency_name(5), ', '.join(self.betters))
 
     def command_beg(self, data):
