@@ -1,6 +1,7 @@
 import random
 from datetime import datetime
 import settings
+from utils import get_points
 
 VERBS = ['gains'] * 10 + ['loses'] * 10 + ['gives']
 RAND_OPTS = [1] * 10 + [2] * 9 + [3] * 8 + [4] * 7 + [5] * 6 + [6] * 5 + [7] * 4 + [8] * 3 + [9] * 2 + [10] * 1
@@ -50,11 +51,12 @@ def command_random(instance, data):
 
     percent = random.choice(RAND_OPTS)
 
-    instance.cur.execute('SELECT amount FROM currency WHERE user = ?', (user,))
-    try:
-        current_points = int(instance.cur.fetchone()[0])
-    except TypeError:
-        return "Sorry %s you're not in the database yet.  Try again in 5 mins" % user 
+    # instance.cur.execute('SELECT amount FROM currency WHERE user = ?', (user,))
+    # try:
+    #     current_points = int(instance.cur.fetchone()[0])
+    # except TypeError:
+    #     return "Sorry %s you're not in the database yet.  Try again in 5 mins" % user 
+    current_points = get_points(instance, user)
     
     change_points = int(round(current_points * (float(percent)/float(100)), 0))
     if change_points == 0:

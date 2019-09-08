@@ -34,7 +34,7 @@ def validate_user(instance, users):
     new_users = 0
     for user in users:
         if user not in db_user_list:
-            new_user += 1
+            new_users += 1
             sql = 'INSERT INTO currency(user, timestamp, amount, time_increments) VALUES(?, ?, ?, ?)'
             instance.cur.execute(sql, (user, get_timestamp(), 0, 0))
     success(instance, new_users)

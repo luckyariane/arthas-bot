@@ -34,8 +34,6 @@ class Commands():
             '!beg' : self.command_beg,
             '!scrub' : self.command_scrub,
             '!nextstream' : self.command_nextstream,
-            '!not8th': self.command_not8th,
-            '!bonus': self.command_bonus,
             # '!race' : self.command_race,
             #'!merrychristmas' : self.command_merrychristmas,
         }
@@ -49,6 +47,8 @@ class Commands():
             '!addreg': self.command_addreg,
             '!betpay': self.command_betpay,
             '!betopts': self.command_betopts,
+            '!not8th': self.command_not8th,
+            '!bonus': self.command_bonus,
             '!raidstart' : self.command_raidstart,
             '!raidstop' : self.command_raidstop,
             # '!racestart' : self.command_racestart,
@@ -75,6 +75,7 @@ class Commands():
         self.bets = dict()
         self.betters = list()
         self.bet_options = dict()
+        self.bet_payout = 5
 
         # functionality for raiding
         self.raid = False
@@ -131,6 +132,7 @@ class Commands():
         self.bets = dict()
         self.betters = list()
         self.bet_options = dict()
+        self.bet_payout = data[1]
         return 'Betting has started.  Enter with !bet <value>'
 
     def command_betclose(self, data):
@@ -189,12 +191,14 @@ class Commands():
         if on_cooldown(self.cooldowns['!not8th'], three_mins): return True
         for better in self.betters:
             add_points(self, better, 1)
+        self.cooldowns['!not8th'] = set_cooldown()
         return 'Yay not 8th!  All betters get 1 %s! (%s)' % (self.fmt_currency_name(1), ', '.join(self.betters))
 
     def command_bonus(self, data):
         if on_cooldown(self.cooldowns['!bonus'], three_mins): return True
         for better in self.betters:
             add_points(self, better, 5)
+        self.coodowns['!bonus'] = set_cooldown()
         return 'Yay Bonus! All betters get 5 %s! (%s)' % (self.fmt_currency_name(5), ', '.join(self.betters))
 
     def command_beg(self, data):
