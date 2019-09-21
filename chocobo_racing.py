@@ -2,8 +2,6 @@ from cooldowns import init_cooldown, on_cooldown, set_cooldown, get_cooldown, tw
 from utils import add_points, sub_points
 from random import choice
 
-entry_open = False
-
 class ChocoboRace():
 
     def __init__(self, test=False):
