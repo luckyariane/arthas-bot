@@ -7,6 +7,7 @@ import settings
 import refresh_api
 from currency import LoyaltyPoints
 from stream_data import Stream
+from chocobo_racing import ChocoboRace
 
 # --------------------------------------------- Start Settings ----------------------------------------------------
 HOST = "irc.chat.twitch.tv"                     # Hostname of the IRC-Server in this case twitch's
@@ -19,7 +20,8 @@ STREAM = Stream()
 DISPLAY = api_parse.streamDataDisplay()
 YT = yt_intro_vid.YTVideo()
 C = LoyaltyPoints()
-COMS = commands.Commands(C.con, C.cur)
+CBR = ChocoboRace()
+COMS = commands.Commands(C.con, C.cur, CBR)
 # --------------------------------------------- End Settings -------------------------------------------------------
 
 
@@ -112,6 +114,10 @@ def main():
                 DISPLAY.update()
                 YT.main()
                 C.checkCurrency()
+            cbr_data = CBR.race_check()
+            if type(cbr_data) == str:
+                send_message(con, CHAN, cbr_data)
+
             data = data+con.recv(1024).decode('UTF-8')
             data_split = re.split(r"[~\r\n]+", data)
             data = data_split.pop()

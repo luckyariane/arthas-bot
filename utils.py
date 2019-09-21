@@ -16,6 +16,7 @@ def add_points_multi(instance, user_list, change_points, time_tracking=False):
 
 def sub_points(instance, user, change_points):
     validate_user(instance, [user])
+    if get_points(instance, user) < int(change_points): return False
     r = instance.cur.execute('UPDATE currency SET amount = amount - ? WHERE user = ?', (change_points, user))
     return success(instance, r.rowcount)
 
@@ -37,9 +38,7 @@ def validate_user(instance, users):
             new_users += 1
             sql = 'INSERT INTO currency(user, timestamp, amount, time_increments) VALUES(?, ?, ?, ?)'
             instance.cur.execute(sql, (user, get_timestamp(), 0, 0))
-    success(instance, new_users)
-
-    
+    success(instance, new_users)    
 
 def success(instance, value):
     if value == 0: 

@@ -7,13 +7,16 @@ from settings import ROOT_PATH, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME
 from cooldowns import init_cooldown, set_cooldown, on_cooldown, get_cooldown, get_timestamp, one_min, two_mins, three_mins, five_mins
 
 class Commands():
-    def __init__(self, con, cur): 
+    def __init__(self, con, cur, cbr): 
         # constants
         self.currency_name = 'clovers'
 
         # db objects
         self.con = con
         self.cur = cur
+
+        # chocobo racing instance
+        self.cbr = cbr
 
         self.dir = ROOT_PATH
         self.regulars = REGULARS
@@ -34,7 +37,7 @@ class Commands():
             '!beg' : self.command_beg,
             '!scrub' : self.command_scrub,
             '!nextstream' : self.command_nextstream,
-            # '!race' : self.command_race,
+            '!race' : self.command_race,
             #'!merrychristmas' : self.command_merrychristmas,
         }
         self.commands_regulars = {
@@ -64,7 +67,7 @@ class Commands():
             '!wipe'     : init_cooldown(),
             '!not8th'   : init_cooldown(),
             '!bonus'    : init_cooldown(),
-            # '!race'     : init_cooldown(),
+            '!race'     : init_cooldown(),
         }
 
         # functionality for !race
@@ -247,17 +250,9 @@ class Commands():
             day = (day + 1) % 7
         return NICKNAME + "'s next stream will start %s at %sm EST" % next_stream
     
-    # def command_race(self, data):
-    #     if on_cooldown(self.cooldowns['!race'], two_mins):
-    #         return "%s is trying to register for the Chocobo Racing Lucky Cup, but they forgot to train their chocobo.  Try again in %s seconds." % (self.user, get_cooldown(self.cooldowns['!race'], two_mins))
+    def command_race(self, data):
+        return self.cbr.command_race(self, data)
 
-    #     if self.entry_open == False:
-    #         self.entry_open = True
-    #         race = ChocoboRace(self)
-    #         race.register_racer(self, data)
-    #         return "%s has registered for the Chocobo Racing Lucky Cup. Everyone can Join! To join type !race (amount)" % self.user
-    #     else:
-    #         race.register_racer(self, data)
 
     def command_merrychristmas(self, data):
         if self.user in self.winners:

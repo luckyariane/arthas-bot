@@ -13,7 +13,7 @@ def on_cooldown(timestamp, interval):
 
 def get_cooldown(timestamp, interval):
     d = datetime.now() - timestamp
-    return d.seconds
+    return interval - d.seconds
 
 def set_cooldown():
     return datetime.now()

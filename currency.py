@@ -42,6 +42,11 @@ class LoyaltyPoints():
         for data in self.cur.fetchall():
             print data
 
+    def fixCurrency(self, user, amount):
+        sql = 'UPDATE currency SET amount = ? WHERE user = ?'
+        self.cur.execute(sql, (amount, user))
+        self.con.commit()
+
     def __initDB(self):        
         sql = """CREATE TABLE
                     IF NOT EXISTS currency (
@@ -58,4 +63,4 @@ class LoyaltyPoints():
 if __name__ == '__main__':
     c = LoyaltyPoints()
     #c.checkCurrency()
-    #c.dump()
+    c.dump()
