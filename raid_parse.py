@@ -169,7 +169,11 @@ class RaidParse():
 ##        return path
                     
     def healthPercent(self, x, y):
-        return int((float(x) / float(y)) * 100)
+        percent = (float(x) / float(y)) * 100
+        if percent < 1:
+            return "{:.1f}".format(percent)
+        else:
+            return int(percent)
 
     def parseAttack(self, line):
         #type_code = line[0]
@@ -321,13 +325,14 @@ class RaidParse():
 
 if __name__ == '__main__':
     rp = RaidParse()
+    print rp.healthPercent(23,10000)
     #rp.rd.delete()
     #rp.rd.init(
     #rp.rd.addMissingData('Lakshmi', 'WIPE', 14)
     #drp.rd.addMissingData('Leviathan', 'WIN', 1)
     #rp.rd.viewData('Innocence')
     #sys.exit(1)
-    rp.main('D:\ACTLogs\\', None)
+    #rp.main('D:\ACTLogs\\', None)
     #rp.main('C:\Users\darle\AppData\Roaming\Advanced Combat Tracker\FFXIVLogs\\', 7)
     #rp.rd.dump()
     #rp.rd.deleteBoss('Titan')
