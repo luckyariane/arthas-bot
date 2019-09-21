@@ -41,7 +41,6 @@ class Commands():
             #'!merrychristmas' : self.command_merrychristmas,
         }
         self.commands_regulars = {
-            #'!curboss': self.command_curboss,
             #'!bossquery': self.command_bossquery,
             '!betstart': self.command_betstart,
             '!betclose': self.command_betclose,
@@ -54,8 +53,6 @@ class Commands():
             '!bonus': self.command_bonus,
             '!raidstart' : self.command_raidstart,
             '!raidstop' : self.command_raidstop,
-            # '!racestart' : self.command_racestart,
-            # '!racestop' : self.command_racestop,
         }
         self.commands_private = {
             '!addmod': self.command_addmod,
@@ -82,9 +79,6 @@ class Commands():
 
         # functionality for raiding
         self.raid = False
-
-        # functionality for chocobo racing
-        # self.racing = False
 
     # --------------------------------------------- Start Local Command Functions --------------------------------------------
 
@@ -250,10 +244,6 @@ class Commands():
             day = (day + 1) % 7
         return NICKNAME + "'s next stream will start %s at %sm EST" % next_stream
     
-    def command_race(self, data):
-        return self.cbr.command_race(self, data)
-
-
     def command_merrychristmas(self, data):
         if self.user in self.winners:
             return None
@@ -271,6 +261,9 @@ class Commands():
 
     def command_random(self, data):
         return command_random(self, data)
+        
+    def command_race(self, data):
+        return self.cbr.command_race(self, data)
 
     # --------------------------------------------- End Remote Command Functions ---------------------------------------------
 
