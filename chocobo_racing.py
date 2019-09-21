@@ -53,7 +53,7 @@ class ChocoboRace():
         winners = list()
         all_winners = True
         for racer in self.racers.keys():
-            result = choice(['win', 'lose', 'lose'])
+            result = choice(['win', 'lose'])
             if result == 'win':
                 if add_points(self.instance, racer, int(self.racers[racer]) * 2):
                     winners.append(racer)
