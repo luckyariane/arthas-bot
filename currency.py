@@ -4,7 +4,8 @@ from utils import get_webpage, convert_json, add_points_multi
 from cooldowns import set_cooldown, on_cooldown, get_timestamp, five_mins
 
 class LoyaltyPoints():    
-    def __init__(self):     
+    def __init__(self, db_path=r'\Data\Databases\currency.db'):
+        self.db_path = db_path
         self.lastRun = set_cooldown()
         self.delay = five_mins
         self.increment = 1 # per delay
@@ -14,7 +15,7 @@ class LoyaltyPoints():
         self.current_users = list()   
 
         # database
-        self.con = sqlite.connect(ROOT_PATH + r'\Data\Databases\currency.db')
+        self.con = sqlite.connect(ROOT_PATH + self.db_path)
         self.cur = self.con.cursor()
         self.__initDB()
 

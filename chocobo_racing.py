@@ -6,7 +6,8 @@ entry_open = False
 
 class ChocoboRace():
 
-    def __init__(self):
+    def __init__(self, test=False):
+        self.test = test
         self.entry_open = False
         self.open_time = init_cooldown()
         self.racers = dict()
@@ -14,12 +15,12 @@ class ChocoboRace():
 
     def race_check(self):
         if self.entry_open:
-            if not on_cooldown(self.open_time, two_mins):
+            if not on_cooldown(self.open_time, two_mins, test=self.test):
                 self.entry_open = False
                 return "Registration for the Chocobo Racing Lucky Cup is now closed.  The race is starting."
         else:
             if self.racers:
-                if on_cooldown(self.open_time, three_mins):
+                if on_cooldown(self.open_time, three_mins, test=self.test):
                     return True
                 else:
                     return self.run_race()
@@ -27,7 +28,7 @@ class ChocoboRace():
     def command_race(self, instance, data):
         if not self.instance: self.instance = instance
         if self.entry_open == False:
-            if on_cooldown(instance.cooldowns['!race'], two_mins):
+            if on_cooldown(instance.cooldowns['!race'], two_mins, test=self.test):
                 return "%s is trying to register for the Chocobo Racing Lucky Cup, but they forgot to train their chocobo.  Try again in %s seconds." % (self.instance.user, get_cooldown(instance.cooldowns['!race'], two_mins))
             else:
                 if self.register_racer(data):
