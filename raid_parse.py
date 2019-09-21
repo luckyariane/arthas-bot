@@ -168,10 +168,11 @@ class RaidParse():
 
 ##        return path
                     
-    def healthPercent(self, x, y):
-        percent = (float(x) / float(y)) * 100
+    def healthPercent(self, cur_health, max_health):
+        percent = (float(cur_health) / float(max_health)) * 100
         if percent < 1:
-            return "{:.1f}".format(percent)
+            if percent < 0.1: return "{:.2f}".format(percent)
+            else: return "{:.1f}".format(percent)
         else:
             return int(percent)
 
@@ -325,7 +326,9 @@ class RaidParse():
 
 if __name__ == '__main__':
     rp = RaidParse()
+    print rp.healthPercent(2, 10000)
     print rp.healthPercent(23,10000)
+    print rp.healthPercent(2000,10000)
     #rp.rd.delete()
     #rp.rd.init(
     #rp.rd.addMissingData('Lakshmi', 'WIPE', 14)
