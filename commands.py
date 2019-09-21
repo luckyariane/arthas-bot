@@ -2,7 +2,7 @@ import sqlite3 as sqlite
 import random
 from random_command import command_random
 # from chocobo_racing import ChocoboRace
-from utils import get_points, add_points, add_points_multi, read_file, merge_dicts
+from utils import get_top_users, get_points, add_points, add_points_multi, read_file, merge_dicts
 from settings import ROOT_PATH, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME
 from cooldowns import init_cooldown, set_cooldown, on_cooldown, get_cooldown, get_timestamp, one_min, two_mins, three_mins, five_mins
 
@@ -38,6 +38,7 @@ class Commands():
             '!scrub' : self.command_scrub,
             '!nextstream' : self.command_nextstream,
             '!race' : self.command_race,
+            '!top5' : self.command_top5,
             #'!merrychristmas' : self.command_merrychristmas,
         }
         self.commands_regulars = {
@@ -243,6 +244,9 @@ class Commands():
                         break
             day = (day + 1) % 7
         return NICKNAME + "'s next stream will start %s at %sm EST" % next_stream
+
+    def command_top5(self, data):
+        return ', '.join(['%s (%s)' % (user, amount) for user, amount in get_top_users(self, 5)])
     
     def command_merrychristmas(self, data):
         if self.user in self.winners:

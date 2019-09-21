@@ -2,6 +2,10 @@ import urllib2, json
 from settings import CLIENT_ID, OAUTH, HELIX_OAUTH
 from cooldowns import get_timestamp
 
+def get_top_users(instance, num):
+    r = instance.cur.execute('SELECT user, amount FROM currency WHERE user != "arthasbot" ORDER BY amount DESC LIMIT ?', (num,))
+    return r.fetchall()
+
 def add_points(instance, user, change_points):
     validate_user(instance, [user])
     r = instance.cur.execute('UPDATE currency SET amount = amount + ? WHERE user = ?', (change_points, user))
