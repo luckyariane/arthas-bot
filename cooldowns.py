@@ -6,14 +6,16 @@ three_mins = 180
 five_mins = 300
 thirty_mins = 30 * 60
 
-def on_cooldown(timestamp, interval):
+def on_cooldown(timestamp, interval, test=False):
+    if test:
+        interval = interval / 10
     d = datetime.now() - timestamp
     if d.seconds < interval: return True
     return False
 
 def get_cooldown(timestamp, interval):
     d = datetime.now() - timestamp
-    return d.seconds
+    return interval - d.seconds
 
 def set_cooldown():
     return datetime.now()

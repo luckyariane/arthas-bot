@@ -2,18 +2,21 @@ import sqlite3 as sqlite
 import random
 from random_command import command_random
 # from chocobo_racing import ChocoboRace
-from utils import get_points, add_points, add_points_multi, read_file, merge_dicts
+from utils import get_top_users, get_points, add_points, add_points_multi, read_file, merge_dicts
 from settings import ROOT_PATH, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME
 from cooldowns import init_cooldown, set_cooldown, on_cooldown, get_cooldown, get_timestamp, one_min, two_mins, three_mins, five_mins
 
 class Commands():
-    def __init__(self, con, cur): 
+    def __init__(self, con, cur, cbr): 
         # constants
         self.currency_name = 'clovers'
 
         # db objects
         self.con = con
         self.cur = cur
+
+        # chocobo racing instance
+        self.cbr = cbr
 
         self.dir = ROOT_PATH
         self.regulars = REGULARS
@@ -34,11 +37,11 @@ class Commands():
             '!beg' : self.command_beg,
             '!scrub' : self.command_scrub,
             '!nextstream' : self.command_nextstream,
-            # '!race' : self.command_race,
+            '!race' : self.command_race,
+            '!top5' : self.command_top5,
             #'!merrychristmas' : self.command_merrychristmas,
         }
         self.commands_regulars = {
-            #'!curboss': self.command_curboss,
             #'!bossquery': self.command_bossquery,
             '!betstart': self.command_betstart,
             '!betclose': self.command_betclose,
@@ -51,8 +54,6 @@ class Commands():
             '!bonus': self.command_bonus,
             '!raidstart' : self.command_raidstart,
             '!raidstop' : self.command_raidstop,
-            # '!racestart' : self.command_racestart,
-            # '!racestop' : self.command_racestop,
         }
         self.commands_private = {
             '!addmod': self.command_addmod,
@@ -64,7 +65,7 @@ class Commands():
             '!wipe'     : init_cooldown(),
             '!not8th'   : init_cooldown(),
             '!bonus'    : init_cooldown(),
-            # '!race'     : init_cooldown(),
+            '!race'     : init_cooldown(),
         }
 
         # functionality for !race
@@ -79,9 +80,6 @@ class Commands():
 
         # functionality for raiding
         self.raid = False
-
-        # functionality for chocobo racing
-        # self.racing = False
 
     # --------------------------------------------- Start Local Command Functions --------------------------------------------
 
@@ -246,19 +244,10 @@ class Commands():
                         break
             day = (day + 1) % 7
         return NICKNAME + "'s next stream will start %s at %sm EST" % next_stream
+
+    def command_top5(self, data):
+        return ', '.join(['%s (%s)' % (user, amount) for user, amount in get_top_users(self, 5)])
     
-    # def command_race(self, data):
-    #     if on_cooldown(self.cooldowns['!race'], two_mins):
-    #         return "%s is trying to register for the Chocobo Racing Lucky Cup, but they forgot to train their chocobo.  Try again in %s seconds." % (self.user, get_cooldown(self.cooldowns['!race'], two_mins))
-
-    #     if self.entry_open == False:
-    #         self.entry_open = True
-    #         race = ChocoboRace(self)
-    #         race.register_racer(self, data)
-    #         return "%s has registered for the Chocobo Racing Lucky Cup. Everyone can Join! To join type !race (amount)" % self.user
-    #     else:
-    #         race.register_racer(self, data)
-
     def command_merrychristmas(self, data):
         if self.user in self.winners:
             return None
@@ -276,6 +265,9 @@ class Commands():
 
     def command_random(self, data):
         return command_random(self, data)
+        
+    def command_race(self, data):
+        return self.cbr.command_race(self, data)
 
     # --------------------------------------------- End Remote Command Functions ---------------------------------------------
 
