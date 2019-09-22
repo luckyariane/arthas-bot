@@ -21,6 +21,9 @@ class RaidData():
         self.cur = self.conn.cursor()
         self.dir = settings.ROOT_PATH + r'\Data'
         
+        self.html_file_live = settings.ROOT_PATH + r'\Web Overlay\myStreamPanelAnimationsRaid.html'
+        self.html_file_base = settings.ROOT_PATH + r'\Web Overlay\myStreamPanelSourceRaid.html'
+        
     def delete(self):
         sql = "DROP TABLE raid_events"
         self.cur.execute(sql)
@@ -74,25 +77,48 @@ class RaidData():
         
         sql = "SELECT timestamp FROM raid_events WHERE boss=? AND type='WIPE'"
         self.cur.execute(sql, (boss,))
-        timestamps = self.cur.fetchall()
-        utils.update_file(r'%s\\boss_wipe.txt' % self.dir, len(timestamps))
+        wipes = self.cur.fetchall()
+        utils.update_file(r'%s\\boss_wipe.txt' % self.dir, len(wipes))
 
         today = str(datetime.today()).split(' ')[0]
-        #today = '2019-08-06'
         wipes_today = list()
-        for timestamp, in timestamps:
+        for timestamp, in wipes:
             if today in timestamp:
                 wipes_today.append(timestamp)
-        #print len(wipes_today)
         utils.update_file(r'%s\\boss_wipe_today.txt' % self.dir, len(wipes_today))        
         
         sql = "SELECT timestamp FROM raid_events WHERE boss=? AND type='WIN'"
         self.cur.execute(sql, (boss,))
-        utils.update_file(r'%s\\boss_kill.txt' % self.dir, len(self.cur.fetchall()))
+        wins = self.cur.fetchall()
+        utils.update_file(r'%s\\boss_kill.txt' % self.dir, len(wins))
         
         sql = "SELECT min(prog) FROM raid_events WHERE boss=?"
         self.cur.execute(sql, (boss,))
-        utils.update_file(r'%s\\boss_prog.txt' % self.dir, str(self.cur.fetchone()[0]) + '%')
+        prog = str(self.cur.fetchone()[0]) + '%'
+        utils.update_file(r'%s\\boss_prog.txt' % self.dir, prog)
+
+        raid_type = 'PROG'
+        if len(wins) > 0:
+            raid_type = 'FARM'
+
+        if raid_type == 'PROG':
+            h1 = 'WIPES'
+            c1 = len(wipes_today)
+            h2 = 'BEST'
+            c2 = prog
+        else: 
+            raid_type = 'FARM'
+            h1 = 'WINS'
+            c1 = len(wins)
+            h2 = 'WIPES'
+            c2 = len(wipes_today)
+        
+        with open(self.html_file_base, 'r') as b:
+            html = b.read()
+            with open(self.html_file_live, 'w') as l:
+                l.write(html % (raid_type, boss, h1, c1, h2, c2))
+                l.close()
+            b.close()
         
     def viewData(self, boss):
         sql = "SELECT * FROM raid_events WHERE boss=?"
@@ -326,16 +352,13 @@ class RaidParse():
 
 if __name__ == '__main__':
     rp = RaidParse()
-    print rp.healthPercent(2, 10000)
-    print rp.healthPercent(23,10000)
-    print rp.healthPercent(2000,10000)
     #rp.rd.delete()
     #rp.rd.init(
     #rp.rd.addMissingData('Lakshmi', 'WIPE', 14)
     #drp.rd.addMissingData('Leviathan', 'WIN', 1)
     #rp.rd.viewData('Innocence')
     #sys.exit(1)
-    #rp.main('D:\ACTLogs\\', None)
+    rp.main('D:\ACTLogs\\', None)
     #rp.main('C:\Users\darle\AppData\Roaming\Advanced Combat Tracker\FFXIVLogs\\', 7)
     #rp.rd.dump()
     #rp.rd.deleteBoss('Titan')
