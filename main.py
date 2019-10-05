@@ -5,9 +5,8 @@ import api_parse
 import yt_intro_vid
 import settings
 import refresh_api
-from currency import LoyaltyPoints
 from stream_data import Stream
-from chocobo_racing import ChocoboRace
+from timed_objects import TimerObjects
 
 # --------------------------------------------- Start Settings ----------------------------------------------------
 HOST = "irc.chat.twitch.tv"                     # Hostname of the IRC-Server in this case twitch's
@@ -19,9 +18,8 @@ PASS = settings.PASS                            # www.twitchapps.com/tmi/ will h
 STREAM = Stream()
 DISPLAY = api_parse.streamDataDisplay()
 YT = yt_intro_vid.YTVideo()
-C = LoyaltyPoints()
-CBR = ChocoboRace()
-COMS = commands.Commands(C.con, C.cur, CBR)
+TIMEOBJS = TimerObjects()
+COMS = commands.Commands(TIMEOBJS)
 # --------------------------------------------- End Settings -------------------------------------------------------
 
 
@@ -113,10 +111,10 @@ def main():
             if STREAM.live: 
                 DISPLAY.update()
                 YT.main()
-                C.checkCurrency()
-            cbr_data = CBR.race_check()
-            if type(cbr_data) == str:
-                send_message(con, CHAN, cbr_data)
+            for obj in TIMEOBJS.objs:
+                msg_data = obj.check_timer()
+                if type(msg_data) == str:
+                    send_message(con, CHAN, msg_data)
 
             data = data+con.recv(1024).decode('UTF-8')
             data_split = re.split(r"[~\r\n]+", data)

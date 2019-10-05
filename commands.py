@@ -1,22 +1,23 @@
 import sqlite3 as sqlite
 import random
 from random_command import command_random
-# from chocobo_racing import ChocoboRace
+from vote_content import Content
 from utils import get_top_users, get_points, add_points, add_points_multi, read_file, merge_dicts
 from settings import ROOT_PATH, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME
 from cooldowns import init_cooldown, set_cooldown, on_cooldown, get_cooldown, get_timestamp, one_min, two_mins, three_mins, five_mins
 
 class Commands():
-    def __init__(self, con, cur, cbr): 
+    def __init__(self, timer_objs): 
         # constants
         self.currency_name = 'clovers'
 
         # db objects
-        self.con = con
-        self.cur = cur
+        self.con = timer_objs.C.con
+        self.cur = timer_objs.C.cur
 
-        # chocobo racing instance
-        self.cbr = cbr
+        # timer objects
+        self.cbr = timer_objs.CBR
+        self.content = timer_objs.CONTENT
 
         self.dir = ROOT_PATH
         self.regulars = REGULARS
@@ -39,6 +40,8 @@ class Commands():
             '!nextstream' : self.command_nextstream,
             '!race' : self.command_race,
             '!top5' : self.command_top5,
+            '!content' : self.command_content,
+            '!job' : self.command_job,
             #'!merrychristmas' : self.command_merrychristmas,
         }
         self.commands_regulars = {
@@ -268,6 +271,12 @@ class Commands():
         
     def command_race(self, data):
         return self.cbr.command_race(self, data)
+
+    def command_content(self, data):
+        return self.content.command_content(self, data)
+
+    def command_job(self, data):
+        return self.content.command_job(data)
 
     # --------------------------------------------- End Remote Command Functions ---------------------------------------------
 
