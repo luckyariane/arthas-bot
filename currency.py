@@ -19,7 +19,7 @@ class LoyaltyPoints():
         self.cur = self.con.cursor()
         self.__initDB()
 
-    def checkCurrency(self):
+    def check_timer(self):
         if on_cooldown(self.lastRun, self.delay):
             return 
 

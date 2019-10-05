@@ -11,7 +11,7 @@ class ChocoboRace():
         self.racers = dict()
         self.instance = None
 
-    def race_check(self):
+    def check_timer(self):
         if self.entry_open:
             if not on_cooldown(self.open_time, two_mins, test=self.test):
                 self.entry_open = False
