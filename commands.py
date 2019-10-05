@@ -2,7 +2,7 @@ import sqlite3 as sqlite
 import random
 from random_command import command_random
 from vote_content import Content
-from utils import get_top_users, get_points, add_points, add_points_multi, read_file, merge_dicts
+from utils import get_top_users, get_points, add_points, add_points_multi, read_file, merge_dicts, unlurk_user
 from settings import ROOT_PATH, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME
 from cooldowns import init_cooldown, set_cooldown, on_cooldown, get_cooldown, get_timestamp, one_min, two_mins, three_mins, five_mins
 
@@ -294,6 +294,7 @@ class Commands():
         return commands
 
     def set_user(self, user):
+        unlurk_user(self, user)
         self.user = user
 
     def update_bet_options(self):
