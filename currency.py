@@ -56,16 +56,11 @@ class LoyaltyPoints():
                     timestamp text,
                     amount integer,
                     time_increments integer,
-                    lurker integer,
+                    lurker integer default 1,
                     UNIQUE (user) ON CONFLICT Ignore
                     )"""
         self.cur.execute(sql)
         self.con.commit()
-
-    # def updateDB(self):
-    #     sql = """ALTER TABLE currency ADD lurker integer default 1"""
-    #     self.cur.execute(sql)
-    #     self.con.commit()
 
 if __name__ == '__main__':
     c = LoyaltyPoints()
