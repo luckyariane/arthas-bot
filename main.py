@@ -53,8 +53,7 @@ def get_sender(msg):
             break
         if char != ":":
             result += char
-    return result
-
+    return result.lower()
 
 def get_message(msg):
     result = ""
@@ -65,7 +64,6 @@ def get_message(msg):
         i += 1
     result = result.lstrip(':')
     return result
-
 
 def parse_message(con, user, msg, options):
     if len(msg) >= 1:
@@ -133,7 +131,7 @@ def main():
                     try:
                         if line[1] == 'PRIVMSG':
                             sender = get_sender(line[0])
-                            if sender not in COMS.recent_chatters and sender.lower() != 'arthasbot':
+                            if sender not in COMS.recent_chatters and sender != 'arthasbot':
                                 if len(COMS.recent_chatters) > 4:
                                     COMS.recent_chatters.pop(0)
                                 COMS.recent_chatters.append(sender)

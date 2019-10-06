@@ -2,7 +2,7 @@ import sqlite3 as sqlite
 import random
 from random_command import command_random
 from vote_content import Content
-from utils import get_top_users, get_points, add_points, add_points_multi, read_file, merge_dicts, unlurk_user
+from utils import get_top_users, get_points, add_points, add_points_multi, sub_points, read_file, merge_dicts, unlurk_user, user_exists
 from settings import ROOT_PATH, REGULARS, MODERATORS, CHANNEL_NAME, NICKNAME
 from cooldowns import init_cooldown, set_cooldown, on_cooldown, get_cooldown, get_timestamp, one_min, two_mins, three_mins, five_mins
 
@@ -35,6 +35,7 @@ class Commands():
             '!wipe': self.command_wipe,
             '!bet': self.command_bet,
             '!random': self.command_random,
+            '!give': self.command_give,
             '!beg' : self.command_beg,
             '!scrub' : self.command_scrub,
             '!nextstream' : self.command_nextstream,
@@ -202,6 +203,22 @@ class Commands():
         self.cooldowns['!bonus'] = set_cooldown()
         return 'Yay Bonus! All betters get 5 %s! (%s)' % (self.fmt_currency_name(5), ', '.join(self.betters))
 
+    def command_give(self, data):
+        try:
+            amount = int(data[1])
+            recipient = data[2].lower()
+            if self.user == recipient: return None
+            if user_exists(self, recipient):
+                if self.user == CHANNEL_NAME:
+                    if add_points(self, recipient, amount):
+                        return '%s gives %s %s %s' % (NICKNAME, data[2], amount, self.fmt_currency_name(amount))
+                if sub_points(self, self.user, amount):
+                    if add_points(self, recipient, amount):
+                        return '%s gives %s %s %s' % (self.user, data[2], amount, self.fmt_currency_name(amount))
+        except:
+            pass 
+        return None
+
     def command_beg(self, data):
         if get_points(self, self.user) < 5:
             success = add_points(self, self.user, 5)
@@ -318,7 +335,7 @@ class Commands():
             return str(time) + 'a'
 
     def fmt_currency_name(self, amount):
-        if amount == 1:
+        if amount == 1 and self.currency_name[-1] == 's':
             return self.currency_name[:-1]
         else:
             return self.currency_name

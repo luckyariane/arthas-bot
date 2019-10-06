@@ -42,11 +42,15 @@ def validate_user(instance, users):
             new_users += 1
             sql = 'INSERT INTO currency(user, timestamp, amount, time_increments) VALUES(?, ?, ?, ?)'
             instance.cur.execute(sql, (user, get_timestamp(), 0, 0))
-    success(instance, new_users)    
+    success(instance, new_users)   
 
 def unlurk_user(instance, user):
     r = instance.cur.execute('UPDATE currency SET lurker = 0 WHERE user = ?', (user,))
-    return success(instance, r.rowcount)
+    return success(instance, r.rowcount) 
+
+def user_exists(instance, user):
+    instance.cur.execute('SELECT user FROM currency WHERE user = ?', (user,))
+    return success(instance, len(instance.cur.fetchall()))
 
 def success(instance, value):
     if value == 0: 
