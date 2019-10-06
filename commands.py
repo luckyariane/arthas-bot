@@ -205,19 +205,20 @@ class Commands():
 
     def command_give(self, data):
         try:
-            amount = int(data[1])
-            recipient = data[2].lower()
-            if self.user == recipient: return None
+            amount = int(data[2])
+            recipient = data[1].lower()
             if user_exists(self, recipient):
                 if self.user == CHANNEL_NAME:
                     if add_points(self, recipient, amount):
-                        return '%s gives %s %s %s' % (NICKNAME, data[2], amount, self.fmt_currency_name(amount))
+                        return '%s gives %s %s %s' % (NICKNAME, data[1], amount, self.fmt_currency_name(amount))
+                if self.user == recipient: return True
+                if amount < 0: return True
                 if sub_points(self, self.user, amount):
                     if add_points(self, recipient, amount):
                         return '%s gives %s %s %s' % (self.user, data[2], amount, self.fmt_currency_name(amount))
         except:
             pass 
-        return None
+        return True
 
     def command_beg(self, data):
         if get_points(self, self.user) < 5:
@@ -270,7 +271,7 @@ class Commands():
     
     def command_merrychristmas(self, data):
         if self.user in self.winners:
-            return None
+            return True
         #print self.prizes
         prize = random.choice(self.prizes)
         self.prizes.pop(self.prizes.index(prize))
