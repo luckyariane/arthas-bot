@@ -111,10 +111,10 @@ def main():
             if STREAM.live: 
                 DISPLAY.update()
                 YT.main()
-            for obj in TIMEOBJS.objs:
-                msg_data = obj.check_timer()
-                if type(msg_data) == str:
-                    send_message(con, CHAN, msg_data)
+                for obj in TIMEOBJS.objs:
+                    msg_data = obj.check_timer()
+                    if type(msg_data) == str:
+                        send_message(con, CHAN, msg_data)
 
             data = data+con.recv(1024).decode('UTF-8')
             data_split = re.split(r"[~\r\n]+", data)
