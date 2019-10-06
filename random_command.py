@@ -3,7 +3,7 @@ from datetime import datetime
 import settings
 from utils import get_points
 
-VERBS = ['gains'] * 10 + ['loses'] * 10 + ['gives']
+VERBS = ['gains'] * 20 + ['loses'] * 10 + ['gives']
 RAND_OPTS = [1] * 10 + [2] * 9 + [3] * 8 + [4] * 7 + [5] * 6 + [6] * 5 + [7] * 4 + [8] * 3 + [9] * 2 + [10] * 1
 
 # dj_count = 0
@@ -51,19 +51,18 @@ def command_random(instance, data):
 
     percent = random.choice(RAND_OPTS)
 
-    # instance.cur.execute('SELECT amount FROM currency WHERE user = ?', (user,))
-    # try:
-    #     current_points = int(instance.cur.fetchone()[0])
-    # except TypeError:
-    #     return "Sorry %s you're not in the database yet.  Try again in 5 mins" % user 
-    current_points = get_points(instance, user)
+    if verb == 'loses':
+        current_points = get_points(instance, user)
     
-    change_points = int(round(current_points * (float(percent)/float(100)), 0))
-    if change_points == 0:
-        change_points = 1
-        if current_points != 0:
-            percent = int(round((float(change_points)/float(current_points)) * 100))
-        else: percent = 'inf'
+        change_points = int(round(current_points * (float(percent)/float(100)), 0))
+        if change_points == 0:
+            change_points = 1
+            if current_points != 0:
+                percent = int(round((float(change_points)/float(current_points)) * 100))
+            else: percent = None 
+    else:
+        change_points = percent
+        percent = None 
 
     if verb in ['gains', 'loses']:
         if verb == 'gains':
@@ -71,9 +70,16 @@ def command_random(instance, data):
         elif verb == 'loses':
             instance.cur.execute('UPDATE currency SET amount = amount - ? WHERE user = ?', (change_points, user))
         instance.con.commit()
-        return '%s %s %s %s (%s%%)' % (user, verb, change_points, instance.fmt_currency_name(change_points), percent)
+        if percent:
+            return '%s %s %s %s (%s%%)' % (user, verb, change_points, instance.fmt_currency_name(change_points), percent)
+        else:
+            return '%s %s %s %s' % (user, verb, change_points, instance.fmt_currency_name(change_points))
     elif verb == 'gives':
         instance.cur.execute('UPDATE currency SET amount = amount - ? WHERE user = ?', (change_points, user))
         instance.cur.execute('UPDATE currency SET amount = amount + ? WHERE user = ?', (change_points, other_user))
         instance.con.commit()
-        return '%s %s %s %s (%s%%) to %s' % (user, verb, change_points, instance.fmt_currency_name(change_points), percent, other_user)
+        if percent:
+            return '%s %s %s %s (%s%%) to %s' % (user, verb, change_points, instance.fmt_currency_name(change_points), percent, other_user)
+        else:
+            return '%s %s %s %s to %s' % (user, verb, change_points, instance.fmt_currency_name(change_points), other_user)
+
