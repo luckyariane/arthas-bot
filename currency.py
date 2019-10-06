@@ -56,6 +56,7 @@ class LoyaltyPoints():
                     timestamp text,
                     amount integer,
                     time_increments integer,
+                    lurker integer default 1,
                     UNIQUE (user) ON CONFLICT Ignore
                     )"""
         self.cur.execute(sql)

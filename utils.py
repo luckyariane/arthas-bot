@@ -3,7 +3,7 @@ from settings import CLIENT_ID, OAUTH, HELIX_OAUTH
 from cooldowns import get_timestamp
 
 def get_top_users(instance, num):
-    r = instance.cur.execute('SELECT user, amount FROM currency WHERE user != "arthasbot" ORDER BY amount DESC LIMIT ?', (num,))
+    r = instance.cur.execute('SELECT user, amount FROM currency WHERE user != "arthasbot" and lurker = 0 ORDER BY amount DESC LIMIT ?', (num,))
     return r.fetchall()
 
 def add_points(instance, user, change_points):
@@ -43,6 +43,10 @@ def validate_user(instance, users):
             sql = 'INSERT INTO currency(user, timestamp, amount, time_increments) VALUES(?, ?, ?, ?)'
             instance.cur.execute(sql, (user, get_timestamp(), 0, 0))
     success(instance, new_users)    
+
+def unlurk_user(instance, user):
+    r = instance.cur.execute('UPDATE currency SET lurker = 0 WHERE user = ?', (user,))
+    return success(instance, r.rowcount)
 
 def success(instance, value):
     if value == 0: 
