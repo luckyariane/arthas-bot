@@ -7,6 +7,7 @@ class ChocoboRace():
     def __init__(self, test=False):
         self.test = test
         self.entry_open = False
+        self.race_pending = False
         self.open_time = init_cooldown()
         self.racers = dict()
         self.instance = None
@@ -25,13 +26,13 @@ class ChocoboRace():
     
     def command_race(self, instance, data):
         if not self.instance: self.instance = instance
-        if on_cooldown(self.open_time, three_mins, test=self.test): return True
         if self.entry_open == False:
             if on_cooldown(instance.cooldowns['!race'], two_mins, test=self.test):
                 return "%s is trying to register for the Chocobo Racing Lucky Cup, but they forgot to train their chocobo.  Try again in %s seconds." % (self.instance.user, get_cooldown(instance.cooldowns['!race'], two_mins))
-            else:
+            if not race_pending:
                 if self.register_racer(data):
                     self.entry_open = True
+                    self.race_pending = True
                     self.open_time = set_cooldown()
                     return "%s has registered for the Chocobo Racing Lucky Cup. Everyone can join!  To join type: !race <amount>" % self.instance.user
         else:
@@ -60,6 +61,7 @@ class ChocoboRace():
                 all_winners = False
         self.racers = dict()
         self.instance.cooldowns['!race'] = set_cooldown()
+        self.race_pending = False
         if len(winners) == 0:
             return "The briars were everywhere today.  No one won their race."
         if all_winners:
