@@ -215,7 +215,7 @@ class Commands():
                 if amount < 0: return True
                 if sub_points(self, self.user, amount):
                     if add_points(self, recipient, amount):
-                        return '%s gives %s %s %s' % (self.user, data[2], amount, self.fmt_currency_name(amount))
+                        return '%s gives %s %s %s' % (self.user, data[1], amount, self.fmt_currency_name(amount))
         except:
             pass 
         return True
