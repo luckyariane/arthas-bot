@@ -25,6 +25,7 @@ class ChocoboRace():
     
     def command_race(self, instance, data):
         if not self.instance: self.instance = instance
+        if on_cooldown(self.open_time, three_mins, test=self.test): return True
         if self.entry_open == False:
             if on_cooldown(instance.cooldowns['!race'], two_mins, test=self.test):
                 return "%s is trying to register for the Chocobo Racing Lucky Cup, but they forgot to train their chocobo.  Try again in %s seconds." % (self.instance.user, get_cooldown(instance.cooldowns['!race'], two_mins))
