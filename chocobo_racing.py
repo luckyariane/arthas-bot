@@ -29,7 +29,7 @@ class ChocoboRace():
         if self.entry_open == False:
             if on_cooldown(instance.cooldowns['!race'], two_mins, test=self.test):
                 return "%s is trying to register for the Chocobo Racing Lucky Cup, but they forgot to train their chocobo.  Try again in %s seconds." % (self.instance.user, get_cooldown(instance.cooldowns['!race'], two_mins))
-            if not race_pending:
+            if not self.race_pending:
                 if self.register_racer(data):
                     self.entry_open = True
                     self.race_pending = True
