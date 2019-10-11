@@ -22,7 +22,8 @@ class ChocoboRace():
                 if on_cooldown(self.open_time, three_mins, test=self.test):
                     return True
                 else:
-                    return self.run_race()
+                    #return self.run_race()
+                    return self.run_race_real()
     
     def command_race(self, instance, data):
         if not self.instance: self.instance = instance
@@ -69,5 +70,42 @@ class ChocoboRace():
         else:
             return "The race is over.  Congratulations to the winners: %s!" % ', '.join(winners)
 
+    def run_race_real(self):
+        racers = self.racers.keys()
+        npcs = ['npc_a', 'npc_b', 'npc_c', 'npc_d', 'npc_e', 'npc_f']
+        while len(racers) < 8:
+            npc = choice(npcs)
+            if npc not in racers:
+                racers.append(npc)
+
+        racer_dict = dict()
+        for racer in racers:
+            racer_dict[racer] = 0
+
+        for i in range(0,8):
+            for racer in racer_dict:
+                racer_dict[racer] = self.update_distance(racer_dict[racer])
+
+        return 'The race is over.  Results are: ', self.report_placements(racer_dict)
+
+    def update_distance(self, distance):
+        return distance + 100 + int(choice(['0'] * 10 + ['1'] * 9 + ['2'] * 8 + ['3'] * 7 + ['4'] * 6 + ['5'] * 5 + ['6'] * 4 + ['7'] * 3 + ['8'] * 2 + ['9'] * 1))
+
+    def report_placements(self, racer_dict):
+        placements = sorted(racer_dict.items(), key=lambda x:x[1], reverse=True)
+        report = list()
+        for i in range(0, len(placements)):
+            racer = placements[i][0]
+            if 'npc_' in racer: continue
+            if i < 4: 
+                if add_points(self.instance, racer, int(self.racers[racer]) * 2):
+                    pass
+            report.append('%s (%s)' % (placements[i][0], i + 1))
+        return ', '.join(report)
+
+        
+
 if __name__ == '__main__':
+    r = ChocoboRace()
+    print r.run_race_real(['ari', 'winter', 'nick', 'clay'])
     pass    
