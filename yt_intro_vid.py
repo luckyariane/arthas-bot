@@ -47,7 +47,7 @@ class YTVideo():
 
     def getYTVideoWithTimestamp(self, video_dict, item_val=0):
         # TEMP BYPASS
-        # video_id = 'ULUwcXdpod8'
+        # video_id = '6NfgIs0qkdY'
         # video_len_dict = self.getAPIData('videos?id=%s&part=contentDetails&key=%s' % (video_id, MY_YT_API_KEY))
         # video_length = video_len_dict['items'][0]['contentDetails']['duration']
         # return (video_id, self.getRandomTime(video_length), video_dict)

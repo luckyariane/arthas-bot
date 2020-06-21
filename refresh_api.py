@@ -29,13 +29,17 @@ def TokenRefreshTime(path):
 def RefreshToken(path, refresh_token):
     print 'Refreshing token...'
     url = 'https://twitchtokengenerator.com/api/refresh/' + refresh_token
+    print url
     request = urllib2.Request(url)
     data = json.loads(urllib2.urlopen(request).read())
-    if 'token' in data:
+    if 'token' in data and 'refresh' in data:
+        print data
         new_token = data['token']
+        refresh = data['refresh']
         with open(path + r'\arthas-bot\local_settings.py', 'r+') as f:
             settings = f.read()
             settings = re.sub("OAUTH = '.*' # generated from https://twitchtokengenerator.com", "OAUTH = '%s' # generated from https://twitchtokengenerator.com" % new_token, settings)
+            settings = re.sub("REFRESH_TOKEN = '.*' # generated from https://twitchtokengenerator.com", "REFRESH_TOKEN = '%s' # generated from https://twitchtokengenerator.com" % refresh, settings)
             f.seek(0)
             f.write(settings)
             f.close()

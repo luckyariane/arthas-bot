@@ -51,18 +51,18 @@ def command_random(instance, data):
 
     percent = random.choice(RAND_OPTS)
 
-    if verb == 'loses':
-        current_points = get_points(instance, user)
-    
-        change_points = int(round(current_points * (float(percent)/float(100)), 0))
-        if change_points == 0:
-            change_points = 1
-            if current_points != 0:
-                percent = int(round((float(change_points)/float(current_points)) * 100))
-            else: percent = None 
-    else:
-        change_points = percent
-        percent = None 
+    # if verb == 'loses':
+    current_points = get_points(instance, user)
+
+    change_points = int(round(current_points * (float(percent)/float(100)), 0))
+    if change_points == 0:
+        change_points = 1
+        if current_points != 0:
+            percent = int(round((float(change_points)/float(current_points)) * 100))
+        else: percent = 'inf'
+    # else:
+    #     change_points = percent
+    #     percent = None 
 
     if verb in ['gains', 'loses']:
         if verb == 'gains':

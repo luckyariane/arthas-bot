@@ -38,7 +38,7 @@ class LoyaltyPoints():
         self.con.commit()
 
     def dump(self):
-        sql = 'SELECT * FROM currency'
+        sql = 'SELECT * FROM currency ORDER BY time_increments DESC'
         self.cur.execute(sql)
         for data in self.cur.fetchall():
             print data
@@ -64,5 +64,4 @@ class LoyaltyPoints():
 
 if __name__ == '__main__':
     c = LoyaltyPoints()
-    #c.checkCurrency()
     c.dump()
