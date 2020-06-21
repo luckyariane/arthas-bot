@@ -1,3 +1,4 @@
+import sys
 import re
 import socket
 import commands
@@ -94,12 +95,20 @@ def disconnect(con):
 def main():
     con = socket.socket()
     con.connect((HOST, PORT))
-
-    con.settimeout(10.0)
-
+    
     send_pass(con, PASS)
     send_nick(con, NICK)
+    auth_success = con.recv(1024).decode('UTF-8')
+    if 'tmi.twitch.tv 001 arthasbot :Welcome, GLHF!' not in auth_success:
+        print 'Error authenticating to %s' % HOST 
+        print auth_success 
+        sys.exit(0)
     join_channel(con, CHAN)
+    join_success = con.recv(1024).decode('UTF-8')
+    if 'arthasbot!arthasbot@arthasbot.tmi.twitch.tv JOIN #luckyariane' not in join_success:
+        print 'Error joining channel %s' % CHAN
+        print join_success
+        sys.exit(0)
 
     data = ''
 
