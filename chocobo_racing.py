@@ -2,6 +2,28 @@ from cooldowns import init_cooldown, on_cooldown, set_cooldown, get_cooldown, tw
 from utils import add_points, sub_points
 from random import choice
 
+WIN_MOD = {
+    1 : 5,
+    2 : 3, 
+    3 : 2, 
+    4 : 1,
+    5 : 1,
+    6 : 0.5,
+    7 : 0.5,
+    8 : 0,
+}
+
+WORD_MOD = {
+    1 : 'st',
+    2 : 'nd', 
+    3 : 'rd', 
+    4 : 'th',
+    5 : 'th',
+    6 : 'th',
+    7 : 'th',
+    8 : 'th',
+}
+
 class ChocoboRace():
 
     def __init__(self, test=False):
@@ -11,6 +33,8 @@ class ChocoboRace():
         self.open_time = init_cooldown()
         self.racers = dict()
         self.instance = None
+        self.choice_list = ['0'] * 10 + ['1'] * 9 + ['2'] * 8 + ['3'] * 7 + ['4'] * 6 + ['5'] * 5 + ['6'] * 4 + ['7'] * 3 + ['8'] * 2 + ['9'] * 1
+        self.test = False
 
     def check_timer(self):
         if self.entry_open:
@@ -41,6 +65,7 @@ class ChocoboRace():
         return True
 
     def register_racer(self, data):
+        if not data[1]: return False
         if self.instance.user not in self.racers:
             try:
                 if sub_points(self.instance, self.instance.user, data[1]):
@@ -86,10 +111,10 @@ class ChocoboRace():
             for racer in racer_dict:
                 racer_dict[racer] = self.update_distance(racer_dict[racer])
 
-        return 'The race is over.  Results are: ', self.report_placements(racer_dict)
+        return 'The race is over.  Results are: %s' % self.report_placements(racer_dict)
 
     def update_distance(self, distance):
-        return distance + 100 + int(choice(['0'] * 10 + ['1'] * 9 + ['2'] * 8 + ['3'] * 7 + ['4'] * 6 + ['5'] * 5 + ['6'] * 4 + ['7'] * 3 + ['8'] * 2 + ['9'] * 1))
+        return distance + 100 + int(choice(self.choice_list))
 
     def report_placements(self, racer_dict):
         placements = sorted(racer_dict.items(), key=lambda x:x[1], reverse=True)
@@ -97,15 +122,15 @@ class ChocoboRace():
         for i in range(0, len(placements)):
             racer = placements[i][0]
             if 'npc_' in racer: continue
-            if i < 4: 
-                if add_points(self.instance, racer, int(self.racers[racer]) * 2):
-                    pass
-            report.append('%s (%s)' % (placements[i][0], i + 1))
-        return ', '.join(report)
-
-        
+            if not self.test: 
+                if add_points(self.instance, racer, int(self.racers[racer]) * WIN_MOD[i+1]):
+                    report.append('%s%s %s [%s]' % (i + 1, WORD_MOD[i + 1], placements[i][0], int(self.racers[racer] * WIN_MOD[i+1])))
+            else: 
+                report.append('%s%s %s [%s]' % (i + 1, WORD_MOD[i + 1], placements[i][0], int(self.racers[racer] * WIN_MOD[i+1])))
+        return ', '.join(report)        
 
 if __name__ == '__main__':
     r = ChocoboRace()
-    print r.run_race_real(['ari', 'winter', 'nick', 'clay'])
-    pass    
+    r.test = True
+    r.racers = {'ari':100, 'winter':500, 'nick':10, 'clay':100}
+    print r.run_race_real()
