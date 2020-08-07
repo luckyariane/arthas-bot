@@ -13,6 +13,7 @@ CLIENT_ID = CLIENT_ID
 H_BASIC = {
     'Accept' : 'application/vnd.twitchtv.v5+json', # this can be deleted after Sept 12, 2019
     'Client-ID' : CLIENT_ID,
+    'Authorization' : 'OAuth %s' % OAUTH,    
 }
 
 # Kraken v5
@@ -25,7 +26,7 @@ H_AUTH_OLD = {
 # Helix
 H_AUTH = {    
     'Client-ID' : CLIENT_ID,
-    'Authorization' : 'Bearer %s' % HELIX_OAUTH,
+    'Authorization' : 'Bearer %s' % OAUTH,
 }
 
 class streamDataDisplay():
@@ -53,7 +54,7 @@ class streamDataDisplay():
             page = get_webpage(url, h=H_BASIC)
         return convert_json(page)
 
-    def __api_call(self, api, auth=False):
+    def __api_call(self, api, auth=True):
         url = 'https://api.twitch.tv/helix/' + api
         if auth:
             page = get_webpage(url, h=H_AUTH)
@@ -209,9 +210,10 @@ class streamDataDisplay():
 
 if __name__ == '__main__':
     api = streamDataDisplay()
-    api.update()
-    #print api.latest_sub_helix()
+    # api.update()
+    # print api.latest_sub_helix()
     print api.latest_sub()
+    print api.latest_follower()
     #api.test()
 
     # uncomment the lines below and run this file to get your channel id
